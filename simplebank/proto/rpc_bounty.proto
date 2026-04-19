@@ -1,0 +1,82 @@
+syntax = "proto3";
+
+package pb;
+
+option go_package = "simplebank/pb";
+
+// FreezeTx: Lock bounty amount in employer's account (BOUNTY_FREEZE)
+// No real transfer, only frozen_balance increases
+message FreezeRequest {
+    int64 account_id = 1;
+    int64 amount = 2;
+    int64 bounty_id = 3;
+    string idempotency_key = 4;
+    string description = 5;
+}
+
+message FreezeResponse {
+    int64 account_id = 1;
+    int64 frozen_balance = 2;
+}
+
+// UnfreezeTx: Unlock bounty amount (BOUNTY_REFUND) - cancel bounty
+// No real transfer, only frozen_balance decreases
+message UnfreezeRequest {
+    int64 account_id = 1;
+    int64 amount = 2;
+    int64 bounty_id = 3;
+    string idempotency_key = 4;
+    string description = 5;
+}
+
+message UnfreezeResponse {
+    int64 account_id = 1;
+    int64 frozen_balance = 2;
+}
+
+// BountyPayoutTx: Complete bounty - deduct from employer's balance+frozen, credit to hunter
+// This is a real transfer: employer -> hunter
+message BountyPayoutRequest {
+    int64 employer_account_id = 1;
+    int64 hunter_account_id = 2;
+    int64 amount = 3;
+    int64 bounty_id = 4;
+    string idempotency_key = 5;
+    string description = 6;
+}
+
+message BountyPayoutResponse {
+    int64 transfer_id = 1;
+    int64 employer_account_id = 2;
+    int64 hunter_account_id = 3;
+    int64 amount = 4;
+    int64 employer_balance = 5;
+    int64 employer_frozen_balance = 6;
+    int64 hunter_balance = 7;
+}
+
+// DepositTx: Top up account from external channel (DEPOSIT)
+message DepositRequest {
+    int64 account_id = 1;
+    int64 amount = 2;
+    string idempotency_key = 3;
+    string description = 4;
+}
+
+message DepositResponse {
+    int64 account_id = 1;
+    int64 new_balance = 2;
+}
+
+// WithdrawFromFrozen: Permanently deduct from frozen_balance for withdrawal (WITHDRAWAL_OUT)
+message WithdrawFromFrozenRequest {
+    int64 account_id = 1;
+    int64 amount = 2;
+    string idempotency_key = 3;
+    string description = 4;
+}
+
+message WithdrawFromFrozenResponse {
+    int64 account_id = 1;
+    int64 frozen_balance = 2;
+}

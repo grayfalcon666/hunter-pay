@@ -1,0 +1,20 @@
+*.log
+.vscode
+app.env
+doc/swagger/
+simplebank
+
+# ======================================
+# Generated protobuf code (managed via make proto)
+# ======================================
+pb/
+
+# ======================================
+# Migration files (managed via GORM auto-migrate)
+# ======================================
+db/migration/
+
+# ======================================
+# Build artifacts
+# ======================================
+simplebank_new

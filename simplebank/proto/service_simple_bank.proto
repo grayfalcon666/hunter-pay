@@ -1,0 +1,84 @@
+syntax = "proto3";
+
+package pb;
+
+import "google/api/annotations.proto";
+import "rpc_create_user.proto";
+import "rpc_login_user.proto";
+import "rpc_verify_email.proto";
+import "rpc_update_user.proto";
+import "rpc_transfer_tx.proto";
+import "rpc_create_account.proto";
+import "rpc_get_account.proto";
+import "rpc_list_accounts.proto";
+import "rpc_list_transfers.proto";
+import "rpc_bounty.proto";
+
+option go_package = "simplebank/pb";
+
+service SimpleBank {
+    rpc CreateUser (CreateUserRequest) returns (CreateUserResponse) {
+        option (google.api.http) = {
+            post: "/v1/create_user" 
+            body: "*"
+        };
+    }
+
+    rpc CreateAccount (CreateAccountRequest) returns (CreateAccountResponse) {
+        option (google.api.http) = {
+            post: "/v1/create_account" 
+            body: "*"
+        };
+    }
+
+    rpc LoginUser (LoginUserRequest) returns (LoginUserResponse) {
+        option (google.api.http) = {
+            post: "/v1/login_user" 
+            body: "*"
+        };
+    }
+
+    rpc VerifyEmail(VerifyEmailRequest) returns (VerifyEmailResponse){
+        option (google.api.http) = {
+            get: "/v1/verify_email"
+        };
+    }
+
+    rpc UpdateUser(UpdateUserRequest) returns (UpdateUserResponse){
+        option (google.api.http) = {
+            post: "/v1/update_user"  
+            body: "*"
+        };
+    }
+
+    rpc Transfer(TransferTxRequest) returns (TransferTxResponse) {
+        option (google.api.http) = {
+            post: "/v1/transfers" 
+            body: "*"
+        };
+    }
+
+    rpc GetAccount(GetAccountRequest) returns (GetAccountResponse) {}
+
+    rpc ListAccounts(ListAccountsRequest) returns (ListAccountsResponse) {
+        option (google.api.http) = {
+            get: "/v1/accounts"
+        };
+    }
+
+    rpc ListTransfers(ListTransfersRequest) returns (ListTransfersResponse) {
+        option (google.api.http) = {
+            get: "/v1/transfers"
+        };
+    }
+
+    rpc Freeze(FreezeRequest) returns (FreezeResponse) {}
+
+    rpc Unfreeze(UnfreezeRequest) returns (UnfreezeResponse) {}
+
+    rpc BountyPayout(BountyPayoutRequest) returns (BountyPayoutResponse) {}
+
+    rpc Deposit(DepositRequest) returns (DepositResponse) {}
+
+    rpc WithdrawFromFrozen(WithdrawFromFrozenRequest) returns (WithdrawFromFrozenResponse) {}
+}

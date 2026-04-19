@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: simple-bank-api
+  labels:
+    app: simple-bank-api
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: simple-bank-api
+  template:
+    metadata:
+      labels:
+        app: simple-bank-api
+    spec:
+      containers:
+        - name: simple-bank-api
+          image: grayfalcon/simple-bank:latest 
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 11452
+          #从 K8s Secret 中自动注入所有环境变量
+          envFrom:
+            - secretRef:
+                name: simple-bank-secrets

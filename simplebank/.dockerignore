@@ -1,0 +1,7 @@
+.git
+.github
+db/mock
+docker-compose.yaml
+Dockerfile
+Makefile
+*.exe
