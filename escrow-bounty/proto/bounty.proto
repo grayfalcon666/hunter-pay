@@ -1,0 +1,133 @@
+syntax = "proto3";
+
+package pb;
+option go_package = "github.com/grayfalcon666/escrow-bounty/pb";
+
+import "common.proto";
+
+// 悬赏相关请求/响应
+message CreateBountyRequest {
+    string title = 1;
+    string description = 2;
+    int64 reward_amount = 3;
+    int64 employer_account_id = 4;
+    string employer_username = 5; // 可选；未提供则从 JWT token 中获取
+    int64 deadline_timestamp = 6; // 截止时间（秒），可选
+}
+
+message CreateBountyResponse {
+    Bounty bounty = 1;
+}
+
+message ListBountiesRequest {
+    string status = 1;
+    int32 page_id = 2;
+    int32 page_size = 3;
+}
+
+message ListBountiesResponse {
+    repeated Bounty bounties = 1;
+}
+
+message GetBountyRequest {
+    int64 id = 1;
+}
+
+message GetBountyResponse {
+    Bounty bounty = 1;
+    repeated BountyApplication applications = 2;
+}
+
+message DeleteBountyRequest {
+    int64 bounty_id = 1;
+}
+
+message DeleteBountyResponse {
+    bool success = 1;
+}
+
+// 猎人提交工作成果
+message SubmitBountyRequest {
+    int64 bounty_id = 1;
+    string submission_text = 2;
+}
+
+message SubmitBountyResponse {
+    Bounty bounty = 1;
+}
+
+// 雇主审核通过
+message ApproveBountyRequest {
+    int64 bounty_id = 1;
+}
+
+message ApproveBountyResponse {
+    Bounty bounty = 1;
+}
+
+// 雇主审核拒绝
+message RejectBountyRequest {
+    int64 bounty_id = 1;
+}
+
+message RejectBountyResponse {
+    Bounty bounty = 1;
+}
+
+// ==========================================
+// 邀请接单系统
+// ==========================================
+
+message Invitation {
+    int64 id = 1;
+    int64 bounty_id = 2;
+    string poster_username = 3;
+    string hunter_username = 4;
+    string status = 5;        // PENDING | ACCEPTED | DECLINED
+    int64 created_at = 6;     // 秒级时间戳
+    int64 updated_at = 7;
+    // 关联悬赏信息（响应中附加）
+    Bounty bounty = 8;
+}
+
+// 雇主创建邀请
+message CreateInvitationRequest {
+    int64 bounty_id = 1;
+    string hunter_username = 2;
+}
+
+message CreateInvitationResponse {
+    Invitation invitation = 1;
+}
+
+// 获取我收到的邀请（猎人视角）
+message GetMyInvitationsRequest {
+    string status = 1;         // 可选：PENDING | ACCEPTED | DECLINED
+    int32 page_id = 2;
+    int32 page_size = 3;
+}
+
+message GetMyInvitationsResponse {
+    repeated Invitation invitations = 1;
+}
+
+// 猎人响应邀请（接受/拒绝）
+message RespondToInvitationRequest {
+    int64 invitation_id = 1;
+    bool accept = 2;           // true = 接受，false = 拒绝
+}
+
+message RespondToInvitationResponse {
+    Invitation invitation = 1;
+    Bounty bounty = 2;        // 如果接受，附加悬赏信息用于跳转到详情
+}
+
+// 雇主查看自己发出的邀请
+message GetMySentInvitationsRequest {
+    int64 bounty_id = 1;       // 可选：筛选特定悬赏的邀请
+    string status = 2;
+}
+
+message GetMySentInvitationsResponse {
+    repeated Invitation invitations = 1;
+}

@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package pb;
+option go_package = "github.com/grayfalcon666/escrow-bounty/pb";
+
+import "common.proto";
+
+// 申请接单相关请求/响应
+message AcceptBountyRequest {
+    int64 bounty_id = 1;
+    int64 hunter_account_id = 2;
+}
+
+message AcceptBountyResponse {
+    BountyApplication application = 1;
+}
+
+// 猎人查看自己发出的申请
+message GetMyApplicationsRequest {
+    string status = 1;         // 可选：APPLIED | CONFIRMED | REJECTED
+    int32 page_id = 2;
+    int32 page_size = 3;
+}
+
+message GetMyApplicationsResponse {
+    repeated BountyApplication applications = 1;
+}
+

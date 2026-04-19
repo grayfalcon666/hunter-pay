@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+package pb;
+option go_package = "github.com/grayfalcon666/escrow-bounty/pb";
+
+import "google/protobuf/timestamp.proto";
+
+message Bounty {
+    int64 id = 1;
+    string employer_username = 2;
+    int64 employer_account_id = 9;
+    string title = 3;
+    string description = 4;
+    int64 reward_amount = 5;
+    string status = 6;
+    google.protobuf.Timestamp created_at = 7;
+    google.protobuf.Timestamp updated_at = 8;
+    google.protobuf.Timestamp deadline = 10;
+    string submission_text = 11;
+    string hunter_username = 12; // 当前 ACCEPTED 的猎人用户名（无则空字符串）
+}
+
+message BountyApplication {
+    int64 id = 1;
+    int64 bounty_id = 2;
+    string hunter_username = 3;
+    int64 hunter_account_id = 7;
+    string status = 4;
+    google.protobuf.Timestamp created_at = 5;
+    google.protobuf.Timestamp updated_at = 6;
+    Bounty bounty = 8;  // 关联悬赏信息（响应中附加）
+}

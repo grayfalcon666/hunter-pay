@@ -1,0 +1,1719 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "application.proto",
+    "version": "version not set"
+  },
+  "tags": [
+    {
+      "name": "EscrowBountyService"
+    }
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/v1/bounties": {
+      "get": {
+        "summary": "获取悬赏大厅列表",
+        "operationId": "EscrowBountyService_ListBounties",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbListBountiesResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "pageId",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "tags": [
+          "EscrowBountyService"
+        ]
+      },
+      "post": {
+        "summary": "雇主发布悬赏",
+        "operationId": "EscrowBountyService_CreateBounty",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbCreateBountyResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbCreateBountyRequest"
+            }
+          }
+        ],
+        "tags": [
+          "EscrowBountyService"
+        ]
+      }
+    },
+    "/v1/bounties/applications/received": {
+      "get": {
+        "summary": "猎人查看自己发出的申请",
+        "operationId": "EscrowBountyService_GetMyApplications",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbGetMyApplicationsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "status",
+            "description": "可选：APPLIED | CONFIRMED | REJECTED",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "pageId",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "tags": [
+          "EscrowBountyService"
+        ]
+      }
+    },
+    "/v1/bounties/{bountyId}": {
+      "delete": {
+        "summary": "雇主删除悬赏（仅 PENDING/FAILED 状态可删除）",
+        "operationId": "EscrowBountyService_DeleteBounty",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbDeleteBountyResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "bountyId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          }
+        ],
+        "tags": [
+          "EscrowBountyService"
+        ]
+      }
+    },
+    "/v1/bounties/{bountyId}/accept": {
+      "post": {
+        "summary": "猎人申请接单",
+        "operationId": "EscrowBountyService_AcceptBounty",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbAcceptBountyResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "bountyId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/EscrowBountyServiceAcceptBountyBody"
+            }
+          }
+        ],
+        "tags": [
+          "EscrowBountyService"
+        ]
+      }
+    },
+    "/v1/bounties/{bountyId}/approve": {
+      "post": {
+        "summary": "雇主审核通过",
+        "operationId": "EscrowBountyService_ApproveBounty",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbApproveBountyResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "bountyId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/EscrowBountyServiceApproveBountyBody"
+            }
+          }
+        ],
+        "tags": [
+          "EscrowBountyService"
+        ]
+      }
+    },
+    "/v1/bounties/{bountyId}/cancel": {
+      "post": {
+        "summary": "雇主取消悬赏并退款",
+        "operationId": "EscrowBountyService_CancelBounty",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbCancelBountyResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "bountyId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/EscrowBountyServiceCancelBountyBody"
+            }
+          }
+        ],
+        "tags": [
+          "EscrowBountyService"
+        ]
+      }
+    },
+    "/v1/bounties/{bountyId}/comments": {
+      "get": {
+        "operationId": "EscrowBountyService_ListComments",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbListCommentsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "bountyId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          }
+        ],
+        "tags": [
+          "EscrowBountyService"
+        ]
+      },
+      "post": {
+        "operationId": "EscrowBountyService_CreateComment",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbCreateCommentResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "bountyId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/EscrowBountyServiceCreateCommentBody"
+            }
+          }
+        ],
+        "tags": [
+          "EscrowBountyService"
+        ]
+      }
+    },
+    "/v1/bounties/{bountyId}/complete": {
+      "post": {
+        "summary": "雇主确认完成并打款",
+        "operationId": "EscrowBountyService_CompleteBounty",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbCompleteBountyResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "bountyId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/EscrowBountyServiceCompleteBountyBody"
+            }
+          }
+        ],
+        "tags": [
+          "EscrowBountyService"
+        ]
+      }
+    },
+    "/v1/bounties/{bountyId}/confirm": {
+      "post": {
+        "summary": "雇主选定猎人",
+        "operationId": "EscrowBountyService_ConfirmHunter",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbConfirmHunterResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "bountyId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/EscrowBountyServiceConfirmHunterBody"
+            }
+          }
+        ],
+        "tags": [
+          "EscrowBountyService"
+        ]
+      }
+    },
+    "/v1/bounties/{bountyId}/invitations": {
+      "post": {
+        "summary": "悬赏者邀请猎人接单",
+        "operationId": "EscrowBountyService_CreateInvitation",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbCreateInvitationResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "bountyId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/EscrowBountyServiceCreateInvitationBody"
+            }
+          }
+        ],
+        "tags": [
+          "EscrowBountyService"
+        ]
+      }
+    },
+    "/v1/bounties/{bountyId}/messages": {
+      "get": {
+        "operationId": "EscrowBountyService_ListMessages",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbListMessagesResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "bountyId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          }
+        ],
+        "tags": [
+          "EscrowBountyService"
+        ]
+      },
+      "post": {
+        "summary": "悬赏内聊天（原有）",
+        "operationId": "EscrowBountyService_SendMessage",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbSendMessageResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "bountyId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/EscrowBountyServiceSendMessageBody"
+            }
+          }
+        ],
+        "tags": [
+          "EscrowBountyService"
+        ]
+      }
+    },
+    "/v1/bounties/{bountyId}/reject": {
+      "post": {
+        "summary": "雇主审核拒绝",
+        "operationId": "EscrowBountyService_RejectBounty",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbRejectBountyResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "bountyId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/EscrowBountyServiceRejectBountyBody"
+            }
+          }
+        ],
+        "tags": [
+          "EscrowBountyService"
+        ]
+      }
+    },
+    "/v1/bounties/{bountyId}/submit": {
+      "post": {
+        "summary": "猎人提交工作成果",
+        "operationId": "EscrowBountyService_SubmitBounty",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbSubmitBountyResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "bountyId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/EscrowBountyServiceSubmitBountyBody"
+            }
+          }
+        ],
+        "tags": [
+          "EscrowBountyService"
+        ]
+      }
+    },
+    "/v1/bounties/{id}": {
+      "get": {
+        "summary": "获取单个悬赏详情",
+        "operationId": "EscrowBountyService_GetBounty",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbGetBountyResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          }
+        ],
+        "tags": [
+          "EscrowBountyService"
+        ]
+      }
+    },
+    "/v1/comments": {
+      "get": {
+        "operationId": "EscrowBountyService_ListUserComments",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbListUserCommentsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "username",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "pageId",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "tags": [
+          "EscrowBountyService"
+        ]
+      }
+    },
+    "/v1/comments/{commentId}": {
+      "delete": {
+        "operationId": "EscrowBountyService_DeleteComment",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbDeleteCommentResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "commentId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          }
+        ],
+        "tags": [
+          "EscrowBountyService"
+        ]
+      }
+    },
+    "/v1/conversations": {
+      "get": {
+        "operationId": "EscrowBountyService_ListConversations",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbListConversationsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "EscrowBountyService"
+        ]
+      },
+      "post": {
+        "operationId": "EscrowBountyService_GetOrCreateConversation",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbGetOrCreateConversationResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbGetOrCreateConversationRequest"
+            }
+          }
+        ],
+        "tags": [
+          "EscrowBountyService"
+        ]
+      }
+    },
+    "/v1/conversations/unread": {
+      "get": {
+        "operationId": "EscrowBountyService_GetUnreadCounts",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbGetUnreadCountsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "EscrowBountyService"
+        ]
+      }
+    },
+    "/v1/conversations/{conversationId}": {
+      "delete": {
+        "operationId": "EscrowBountyService_DeleteConversation",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbDeleteConversationResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "conversationId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          }
+        ],
+        "tags": [
+          "EscrowBountyService"
+        ]
+      }
+    },
+    "/v1/conversations/{conversationId}/messages": {
+      "get": {
+        "operationId": "EscrowBountyService_ListPrivateMessages",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbListPrivateMessagesResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "conversationId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "beforeId",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "tags": [
+          "EscrowBountyService"
+        ]
+      }
+    },
+    "/v1/conversations/{conversationId}/read": {
+      "post": {
+        "operationId": "EscrowBountyService_MarkMessagesRead",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbMarkReadResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "conversationId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          }
+        ],
+        "tags": [
+          "EscrowBountyService"
+        ]
+      }
+    },
+    "/v1/invitations/received": {
+      "get": {
+        "summary": "猎人查看收到的邀请",
+        "operationId": "EscrowBountyService_GetMyInvitations",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbGetMyInvitationsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "status",
+            "description": "可选：PENDING | ACCEPTED | DECLINED",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "pageId",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "tags": [
+          "EscrowBountyService"
+        ]
+      }
+    },
+    "/v1/invitations/sent": {
+      "get": {
+        "summary": "悬赏者查看发出的邀请",
+        "operationId": "EscrowBountyService_GetMySentInvitations",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbGetMySentInvitationsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "bountyId",
+            "description": "可选：筛选特定悬赏的邀请",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "EscrowBountyService"
+        ]
+      }
+    },
+    "/v1/invitations/{invitationId}/respond": {
+      "post": {
+        "summary": "猎人响应邀请（接受/拒绝）",
+        "operationId": "EscrowBountyService_RespondToInvitation",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbRespondToInvitationResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "invitationId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/EscrowBountyServiceRespondToInvitationBody"
+            }
+          }
+        ],
+        "tags": [
+          "EscrowBountyService"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "EscrowBountyServiceAcceptBountyBody": {
+      "type": "object",
+      "properties": {
+        "hunterAccountId": {
+          "type": "string",
+          "format": "int64"
+        }
+      },
+      "title": "申请接单相关请求/响应"
+    },
+    "EscrowBountyServiceApproveBountyBody": {
+      "type": "object",
+      "title": "雇主审核通过"
+    },
+    "EscrowBountyServiceCancelBountyBody": {
+      "type": "object",
+      "title": "雇主取消悬赏的请求和响应"
+    },
+    "EscrowBountyServiceCompleteBountyBody": {
+      "type": "object",
+      "title": "雇主确认验收并打款请求"
+    },
+    "EscrowBountyServiceConfirmHunterBody": {
+      "type": "object",
+      "properties": {
+        "applicationId": {
+          "type": "string",
+          "format": "int64",
+          "title": "选中的那个申请记录 ID"
+        }
+      },
+      "title": "雇主选定猎人请求"
+    },
+    "EscrowBountyServiceCreateCommentBody": {
+      "type": "object",
+      "properties": {
+        "parentId": {
+          "type": "string",
+          "format": "int64"
+        },
+        "content": {
+          "type": "string"
+        }
+      }
+    },
+    "EscrowBountyServiceCreateInvitationBody": {
+      "type": "object",
+      "properties": {
+        "hunterUsername": {
+          "type": "string"
+        }
+      },
+      "title": "雇主创建邀请"
+    },
+    "EscrowBountyServiceRejectBountyBody": {
+      "type": "object",
+      "title": "雇主审核拒绝"
+    },
+    "EscrowBountyServiceRespondToInvitationBody": {
+      "type": "object",
+      "properties": {
+        "accept": {
+          "type": "boolean",
+          "title": "true = 接受，false = 拒绝"
+        }
+      },
+      "title": "猎人响应邀请（接受/拒绝）"
+    },
+    "EscrowBountyServiceSendMessageBody": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "string"
+        }
+      }
+    },
+    "EscrowBountyServiceSubmitBountyBody": {
+      "type": "object",
+      "properties": {
+        "submissionText": {
+          "type": "string"
+        }
+      },
+      "title": "猎人提交工作成果"
+    },
+    "pbAcceptBountyResponse": {
+      "type": "object",
+      "properties": {
+        "application": {
+          "$ref": "#/definitions/pbBountyApplication"
+        }
+      }
+    },
+    "pbApproveBountyResponse": {
+      "type": "object",
+      "properties": {
+        "bounty": {
+          "$ref": "#/definitions/pbBounty"
+        }
+      }
+    },
+    "pbBounty": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "int64"
+        },
+        "employerUsername": {
+          "type": "string"
+        },
+        "employerAccountId": {
+          "type": "string",
+          "format": "int64"
+        },
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "rewardAmount": {
+          "type": "string",
+          "format": "int64"
+        },
+        "status": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "deadline": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "submissionText": {
+          "type": "string"
+        },
+        "hunterUsername": {
+          "type": "string",
+          "title": "当前 ACCEPTED 的猎人用户名（无则空字符串）"
+        }
+      }
+    },
+    "pbBountyApplication": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "int64"
+        },
+        "bountyId": {
+          "type": "string",
+          "format": "int64"
+        },
+        "hunterUsername": {
+          "type": "string"
+        },
+        "hunterAccountId": {
+          "type": "string",
+          "format": "int64"
+        },
+        "status": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "bounty": {
+          "$ref": "#/definitions/pbBounty",
+          "title": "关联悬赏信息（响应中附加）"
+        }
+      }
+    },
+    "pbCancelBountyResponse": {
+      "type": "object",
+      "properties": {
+        "bounty": {
+          "$ref": "#/definitions/pbBounty"
+        }
+      }
+    },
+    "pbChatMessage": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "int64"
+        },
+        "bountyId": {
+          "type": "string",
+          "format": "int64"
+        },
+        "senderUsername": {
+          "type": "string"
+        },
+        "content": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "pbComment": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "int64"
+        },
+        "bountyId": {
+          "type": "string",
+          "format": "int64"
+        },
+        "parentId": {
+          "type": "string",
+          "format": "int64"
+        },
+        "authorUsername": {
+          "type": "string"
+        },
+        "content": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "int64"
+        },
+        "replies": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/pbComment"
+          }
+        },
+        "parentAuthorUsername": {
+          "type": "string",
+          "title": "for reply quotes"
+        }
+      }
+    },
+    "pbCompleteBountyResponse": {
+      "type": "object",
+      "properties": {
+        "bounty": {
+          "$ref": "#/definitions/pbBounty"
+        }
+      }
+    },
+    "pbConfirmHunterResponse": {
+      "type": "object",
+      "properties": {
+        "bounty": {
+          "$ref": "#/definitions/pbBounty"
+        }
+      }
+    },
+    "pbConversationSummary": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "int64"
+        },
+        "otherUsername": {
+          "type": "string"
+        },
+        "lastMessageContent": {
+          "type": "string"
+        },
+        "lastMessageAt": {
+          "type": "string",
+          "format": "int64"
+        },
+        "unreadCount": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "pbCreateBountyRequest": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "rewardAmount": {
+          "type": "string",
+          "format": "int64"
+        },
+        "employerAccountId": {
+          "type": "string",
+          "format": "int64"
+        },
+        "employerUsername": {
+          "type": "string",
+          "title": "可选；未提供则从 JWT token 中获取"
+        },
+        "deadlineTimestamp": {
+          "type": "string",
+          "format": "int64",
+          "title": "截止时间（秒），可选"
+        }
+      },
+      "title": "悬赏相关请求/响应"
+    },
+    "pbCreateBountyResponse": {
+      "type": "object",
+      "properties": {
+        "bounty": {
+          "$ref": "#/definitions/pbBounty"
+        }
+      }
+    },
+    "pbCreateCommentResponse": {
+      "type": "object",
+      "properties": {
+        "comment": {
+          "$ref": "#/definitions/pbComment"
+        }
+      }
+    },
+    "pbCreateInvitationResponse": {
+      "type": "object",
+      "properties": {
+        "invitation": {
+          "$ref": "#/definitions/pbInvitation"
+        }
+      }
+    },
+    "pbDeleteBountyResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        }
+      }
+    },
+    "pbDeleteCommentResponse": {
+      "type": "object"
+    },
+    "pbDeleteConversationResponse": {
+      "type": "object"
+    },
+    "pbGetBountyResponse": {
+      "type": "object",
+      "properties": {
+        "bounty": {
+          "$ref": "#/definitions/pbBounty"
+        },
+        "applications": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/pbBountyApplication"
+          }
+        }
+      }
+    },
+    "pbGetMyApplicationsResponse": {
+      "type": "object",
+      "properties": {
+        "applications": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/pbBountyApplication"
+          }
+        }
+      }
+    },
+    "pbGetMyInvitationsResponse": {
+      "type": "object",
+      "properties": {
+        "invitations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/pbInvitation"
+          }
+        }
+      }
+    },
+    "pbGetMySentInvitationsResponse": {
+      "type": "object",
+      "properties": {
+        "invitations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/pbInvitation"
+          }
+        }
+      }
+    },
+    "pbGetOrCreateConversationRequest": {
+      "type": "object",
+      "properties": {
+        "otherUsername": {
+          "type": "string"
+        }
+      }
+    },
+    "pbGetOrCreateConversationResponse": {
+      "type": "object",
+      "properties": {
+        "conversation": {
+          "$ref": "#/definitions/pbPrivateConversation"
+        }
+      }
+    },
+    "pbGetUnreadCountsResponse": {
+      "type": "object",
+      "properties": {
+        "counts": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "total": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "pbInvitation": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "int64"
+        },
+        "bountyId": {
+          "type": "string",
+          "format": "int64"
+        },
+        "posterUsername": {
+          "type": "string"
+        },
+        "hunterUsername": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string",
+          "title": "PENDING | ACCEPTED | DECLINED"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "int64",
+          "title": "秒级时间戳"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "int64"
+        },
+        "bounty": {
+          "$ref": "#/definitions/pbBounty",
+          "title": "关联悬赏信息（响应中附加）"
+        }
+      }
+    },
+    "pbListBountiesResponse": {
+      "type": "object",
+      "properties": {
+        "bounties": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/pbBounty"
+          }
+        }
+      }
+    },
+    "pbListCommentsResponse": {
+      "type": "object",
+      "properties": {
+        "comments": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/pbComment"
+          }
+        }
+      }
+    },
+    "pbListConversationsResponse": {
+      "type": "object",
+      "properties": {
+        "conversations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/pbConversationSummary"
+          }
+        },
+        "totalUnread": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "pbListMessagesResponse": {
+      "type": "object",
+      "properties": {
+        "messages": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/pbChatMessage"
+          }
+        }
+      }
+    },
+    "pbListPrivateMessagesResponse": {
+      "type": "object",
+      "properties": {
+        "messages": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/pbPrivateMessage"
+          }
+        },
+        "hasMore": {
+          "type": "boolean"
+        }
+      }
+    },
+    "pbListUserCommentsResponse": {
+      "type": "object",
+      "properties": {
+        "comments": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/pbComment"
+          }
+        }
+      }
+    },
+    "pbMarkReadResponse": {
+      "type": "object"
+    },
+    "pbPrivateConversation": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "int64"
+        },
+        "user1Username": {
+          "type": "string"
+        },
+        "user2Username": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "int64"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "pbPrivateMessage": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "int64"
+        },
+        "conversationId": {
+          "type": "string",
+          "format": "int64"
+        },
+        "senderUsername": {
+          "type": "string"
+        },
+        "content": {
+          "type": "string"
+        },
+        "isRead": {
+          "type": "boolean"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "pbRejectBountyResponse": {
+      "type": "object",
+      "properties": {
+        "bounty": {
+          "$ref": "#/definitions/pbBounty"
+        }
+      }
+    },
+    "pbRespondToInvitationResponse": {
+      "type": "object",
+      "properties": {
+        "invitation": {
+          "$ref": "#/definitions/pbInvitation"
+        },
+        "bounty": {
+          "$ref": "#/definitions/pbBounty",
+          "title": "如果接受，附加悬赏信息用于跳转到详情"
+        }
+      }
+    },
+    "pbSendMessageResponse": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "$ref": "#/definitions/pbChatMessage"
+        }
+      }
+    },
+    "pbSubmitBountyResponse": {
+      "type": "object",
+      "properties": {
+        "bounty": {
+          "$ref": "#/definitions/pbBounty"
+        }
+      }
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": {}
+    },
+    "rpcStatus": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    }
+  }
+}

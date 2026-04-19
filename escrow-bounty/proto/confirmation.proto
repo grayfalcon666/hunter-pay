@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+package pb;
+option go_package = "github.com/grayfalcon666/escrow-bounty/pb";
+import "common.proto";
+
+//雇主选定猎人请求
+message ConfirmHunterRequest {
+    int64 bounty_id = 1;
+    int64 application_id = 2; // 选中的那个申请记录 ID
+}
+
+message ConfirmHunterResponse {
+    Bounty bounty = 1;
+}
+
+// 雇主确认验收并打款请求
+message CompleteBountyRequest {
+    int64 bounty_id = 1;
+}
+
+message CompleteBountyResponse {
+    Bounty bounty = 1;
+}
+
+// 雇主取消悬赏的请求和响应
+message CancelBountyRequest {
+    int64 bounty_id = 1;
+}
+
+message CancelBountyResponse {
+    Bounty bounty = 1;
+}
