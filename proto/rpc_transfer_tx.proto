@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package pb;
+import "google/protobuf/timestamp.proto";
+
+option go_package = "simplebank/pb";
+
+message TransferTxRequest {
+    int64 from_account_id = 1;
+    int64 to_account_id = 2;
+    int64 amount = 3;
+    //防止重放
+    string idempotency_key = 4;
+    string trade_type = 5;
+    int64 trade_id = 6;
+    string description = 7;
+}
+
+message TransferTxResponse {
+    int64 transfer_id = 1;
+    int64 from_account_id = 2;
+    int64 to_account_id = 3;
+    int64 amount = 4;
+    google.protobuf.Timestamp created_at = 5;
+    // 返回转账后的最新余额
+    int64 from_account_balance = 6;
+    int64 to_account_balance = 7;
+}

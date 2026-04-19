@@ -1,0 +1,24 @@
+services:
+  postgres:
+    image: postgres:14-alpine
+    environment:
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=123456
+      - POSTGRES_DB=simple_bank
+  api:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - http_proxy=http://172.17.0.1:7890
+        - https_proxy=http://172.17.0.1:7890
+    ports:
+      - "11452:11452"
+    environment:
+      - DB_SOURCE=postgresql://root:123456@postgres:5432/simple_bank?sslmode=disable
+      - GIN_MODE=release
+    depends_on:
+      - postgres
+    # 语法：./wait-for.sh 主机:端口 -- 执行的命令
+    entrypoint: [ "/app/wait-for.sh", "postgres:5432", "--", "/app/start.sh" ]
+    command: [ "/app/main" ]

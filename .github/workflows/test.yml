@@ -1,0 +1,60 @@
+name: ci-test
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  test:
+    name: Test on Ubuntu
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:12-alpine 
+        env:
+          POSTGRES_USER: root
+          POSTGRES_PASSWORD: 123456
+          POSTGRES_DB: simple_bank
+        ports:
+          - 5432:5432
+        # 健康检查
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+    # 拉取代码
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Install Doppler CLI
+      uses: dopplerhq/cli-action@v3
+
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.22' 
+        cache: true
+
+    - name: Install golang-migrate
+      run: |
+        curl -L https://github.com/golang-migrate/migrate/releases/download/v4.17.0/migrate.linux-amd64.tar.gz | tar xvz
+        sudo mv migrate /usr/local/bin/
+        which migrate
+
+    - name: doppler run -- Run migrations
+      run: migrate -path db/migration -database "$DB_SOURCE" -verbose up
+      env:
+        DOPPLER_TOKEN: ${{ secrets.DOPPLER_TOKEN }}
+        DB_SOURCE: postgresql://root:123456@localhost:5432/simple_bank?sslmode=disable
+
+    - name: Run Test
+      run: doppler run -- go test -v -cover ./...
+      env:
+        DOPPLER_TOKEN: ${{ secrets.DOPPLER_TOKEN }}
+        DB_SOURCE: postgresql://root:123456@localhost:5432/simple_bank?sslmode=disable
