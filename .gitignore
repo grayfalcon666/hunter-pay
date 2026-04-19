@@ -1,0 +1,31 @@
+test_score.html
+test_score2.html
+
+# Binaries
+simplebank
+gateway
+escrow-bounty
+gateway-bin
+*.exe
+
+# Go
+*.log
+.vscode
+app.env
+pb/
+simplebankpb/
+
+# Node / Yarn
+node_modules
+.pnp.cjs
+.pnp.loader.mjs
+.yarn/
+.dist
+
+# Env
+*.env
+.env
+config.yaml
+
+# Workspace
+go.work

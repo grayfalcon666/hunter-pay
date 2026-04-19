@@ -1,0 +1,1 @@
+ALTER TABLE withdrawals DROP COLUMN alipay_real_name;

@@ -1,0 +1,1 @@
+ALTER TABLE bounties ADD COLUMN deadline TIMESTAMPTZ;

@@ -1,0 +1,3 @@
+-- Additional profile tables (extended)
+-- Note: user_profiles and user_reviews already created in 000012
+-- This migration is a no-op marker for the old service boundary; keeping for compatibility

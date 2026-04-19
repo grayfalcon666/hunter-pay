@@ -1,0 +1,2 @@
+ALTER TABLE bounties
+    ADD COLUMN IF NOT EXISTS extend_count INTEGER DEFAULT 0;

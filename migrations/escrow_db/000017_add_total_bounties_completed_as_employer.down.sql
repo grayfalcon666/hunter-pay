@@ -1,0 +1,1 @@
+ALTER TABLE user_profiles DROP COLUMN total_bounties_completed_as_employer;

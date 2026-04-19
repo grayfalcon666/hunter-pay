@@ -1,0 +1,1 @@
+ALTER TABLE withdrawals ADD COLUMN alipay_real_name VARCHAR(255) NOT NULL DEFAULT '';
