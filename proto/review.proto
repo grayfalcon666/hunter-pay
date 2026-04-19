@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package pb;
+
+option go_package = "github.com/grayfalcon666/user-profile-service/pb";
+
+import "google/api/annotations.proto";
+import "common.proto";
+
+message CreateReviewRequest {
+    string reviewed_username = 1;
+    int64 bounty_id = 2;
+    int32 rating = 3;
+    string comment = 4;
+    string review_type = 5;   // EMPLOYER_TO_HUNTER | HUNTER_TO_EMPLOYER
+}
+
+message CreateReviewResponse {
+    UserReview review = 1;
+}
+
+message GetReviewsRequest {
+    string username = 1;
+}
+
+message GetReviewsResponse {
+    repeated UserReview reviews = 1;
+}

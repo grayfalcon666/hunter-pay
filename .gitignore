@@ -1,0 +1,39 @@
+# Binaries
+user-profile-service
+user-profile-service-bin
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Environment (contains secrets)
+*.env
+.env
+.env.local
+
+# Logs
+*.log
+logs/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# OS
+.DS_Store
+
+# ======================================
+# Generated protobuf code (managed via make proto)
+# ======================================
+pb/
+
+# ======================================
+# Migration files (managed via GORM auto-migrate)
+# ======================================
+db/migration/
+
+# ======================================
+# Logs
+# ======================================
+*.log

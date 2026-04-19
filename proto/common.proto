@@ -1,0 +1,40 @@
+syntax = "proto3";
+
+package pb;
+
+option go_package = "github.com/grayfalcon666/user-profile-service/pb";
+
+import "google/protobuf/timestamp.proto";
+
+message UserProfile {
+    string username = 1;
+    string expected_salary_min = 2;    // 单位：分，0 表示未填写
+    string expected_salary_max = 3;
+    string work_location = 4;         // "Remote", "Beijing", ...
+    string experience_level = 5;      // ENTRY | JUNIOR | MID | SENIOR | EXPERT
+    string bio = 6;
+    string avatar_url = 7;
+    double completion_rate = 8;        // 0.0 ~ 1.0
+    double good_review_rate = 9;       // 0.0 ~ 1.0
+    int32 total_bounties_posted = 10;
+    int32 total_bounties_completed = 11;
+    int32 total_bounties_completed_as_employer = 17;  // 雇主视角的完成数
+    int64 total_earnings = 12;        // 单位：分
+    string role = 16;                  // HUNTER | EMPLOYER (默认 EMPLOYER)
+    double reputation_score = 15;       // 信誉分，牛顿冷却衰减后的分数
+    google.protobuf.Timestamp created_at = 13;
+    google.protobuf.Timestamp updated_at = 14;
+    int32 hunter_fulfillment_index = 18;     // 猎人履约指数 [0,100]
+    int32 employer_fulfillment_index = 19;    // 雇主履约指数 [0,100]
+}
+
+message UserReview {
+    int64 id = 1;
+    string reviewer_username = 2;
+    string reviewed_username = 3;
+    int64 bounty_id = 4;
+    int32 rating = 5;                  // 1 ~ 5
+    string comment = 6;
+    string review_type = 7;           // EMPLOYER_TO_HUNTER | HUNTER_TO_EMPLOYER
+    google.protobuf.Timestamp created_at = 8;
+}
