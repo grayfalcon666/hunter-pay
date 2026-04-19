@@ -1,0 +1,49 @@
+syntax = "proto3";
+
+package pb;
+
+import "google/api/annotations.proto";
+
+option go_package = "github.com/grayfalcon666/payment-service/pb";
+
+// 充值请求与响应
+message CreatePaymentRequest {
+    int64 amount = 1;
+    int64 account_id = 2;
+}
+
+message CreatePaymentResponse {
+    string pay_url = 1;
+}
+
+// 提现请求与响应
+message CreateWithdrawalRequest {
+    int64 account_id = 1;
+    int64 amount = 2;
+    string alipay_account = 3;
+    string alipay_real_name = 4;
+}
+
+message CreateWithdrawalResponse {
+    string message = 1;
+    string out_biz_no = 2;
+}
+
+// 定义支付微服务接口
+service PaymentService {
+    // 发起充值 (获取支付宝收银台链接)
+    rpc CreatePayment(CreatePaymentRequest) returns (CreatePaymentResponse) {
+        option (google.api.http) = {
+            post: "/v1/payments/create"
+            body: "*"
+        };
+    }
+
+    // 发起提现
+    rpc CreateWithdrawal(CreateWithdrawalRequest) returns (CreateWithdrawalResponse) {
+        option (google.api.http) = {
+            post: "/v1/withdrawals/create"
+            body: "*"
+        };
+    }
+}
