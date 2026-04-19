@@ -1,0 +1,29 @@
+# Binaries
+gateway
+gateway-bin
+escrow-bounty-new
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Environment (contains secrets)
+*.env
+.env
+.env.local
+
+# Logs
+*.log
+logs/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# OS
+.DS_Store
+gateway-bin
+gateway-bin.old
+gateway-test
+gateway-new
