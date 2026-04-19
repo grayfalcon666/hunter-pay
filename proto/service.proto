@@ -1,0 +1,223 @@
+syntax = "proto3";
+
+package pb;
+option go_package = "github.com/grayfalcon666/escrow-bounty/pb";
+
+import "google/api/annotations.proto";
+import "bounty.proto";
+import "application.proto";
+import "confirmation.proto";
+import "chat.proto";
+
+// 统一服务接口
+service EscrowBountyService {
+    // 雇主发布悬赏
+    rpc CreateBounty(CreateBountyRequest) returns (CreateBountyResponse) {
+        option (google.api.http) = {
+            post: "/v1/bounties"
+            body: "*"
+        };
+    }
+
+    // 获取悬赏大厅列表
+    rpc ListBounties(ListBountiesRequest) returns (ListBountiesResponse) {
+        option (google.api.http) = {
+            get: "/v1/bounties"
+        };
+    }
+
+    // 获取单个悬赏详情
+    rpc GetBounty(GetBountyRequest) returns (GetBountyResponse) {
+        option (google.api.http) = {
+            get: "/v1/bounties/{id}"
+        };
+    }
+
+    // 猎人申请接单
+    rpc AcceptBounty(AcceptBountyRequest) returns (AcceptBountyResponse) {
+        option (google.api.http) = {
+            post: "/v1/bounties/{bounty_id}/accept"
+            body: "*"
+        };
+    }
+
+    // 雇主选定猎人
+    rpc ConfirmHunter(ConfirmHunterRequest) returns (ConfirmHunterResponse) {
+        option (google.api.http) = {
+            post: "/v1/bounties/{bounty_id}/confirm"
+            body: "*"
+        };
+    }
+
+    // 雇主确认完成并打款
+    rpc CompleteBounty(CompleteBountyRequest) returns (CompleteBountyResponse) {
+        option (google.api.http) = {
+            post: "/v1/bounties/{bounty_id}/complete"
+            body: "*"
+        };
+    }
+
+    // 猎人提交工作成果
+    rpc SubmitBounty(SubmitBountyRequest) returns (SubmitBountyResponse) {
+        option (google.api.http) = {
+            post: "/v1/bounties/{bounty_id}/submit"
+            body: "*"
+        };
+    }
+
+    // 雇主审核通过
+    rpc ApproveBounty(ApproveBountyRequest) returns (ApproveBountyResponse) {
+        option (google.api.http) = {
+            post: "/v1/bounties/{bounty_id}/approve"
+            body: "*"
+        };
+    }
+
+    // 雇主审核拒绝
+    rpc RejectBounty(RejectBountyRequest) returns (RejectBountyResponse) {
+        option (google.api.http) = {
+            post: "/v1/bounties/{bounty_id}/reject"
+            body: "*"
+        };
+    }
+
+    // 雇主取消悬赏并退款
+    rpc CancelBounty(CancelBountyRequest) returns (CancelBountyResponse) {
+        option (google.api.http) = {
+            post: "/v1/bounties/{bounty_id}/cancel"
+            body: "*"
+        };
+    }
+
+    // 雇主删除悬赏（仅 PENDING/FAILED 状态可删除）
+    rpc DeleteBounty(DeleteBountyRequest) returns (DeleteBountyResponse) {
+        option (google.api.http) = {
+            delete: "/v1/bounties/{bounty_id}"
+        };
+    }
+
+    // 悬赏内聊天（原有）
+    rpc SendMessage(SendMessageRequest) returns (SendMessageResponse) {
+        option (google.api.http) = {
+            post: "/v1/bounties/{bounty_id}/messages"
+            body: "*"
+        };
+    }
+
+    rpc ListMessages(ListMessagesRequest) returns (ListMessagesResponse) {
+        option (google.api.http) = {
+            get: "/v1/bounties/{bounty_id}/messages"
+        };
+    }
+
+    // ==========================================
+    // Private chat
+    // ==========================================
+
+    rpc GetOrCreateConversation(GetOrCreateConversationRequest) returns (GetOrCreateConversationResponse) {
+        option (google.api.http) = {
+            post: "/v1/conversations"
+            body: "*"
+        };
+    }
+
+    rpc ListConversations(ListConversationsRequest) returns (ListConversationsResponse) {
+        option (google.api.http) = {
+            get: "/v1/conversations"
+        };
+    }
+
+    rpc ListPrivateMessages(ListPrivateMessagesRequest) returns (ListPrivateMessagesResponse) {
+        option (google.api.http) = {
+            get: "/v1/conversations/{conversation_id}/messages"
+        };
+    }
+
+    rpc DeleteConversation(DeleteConversationRequest) returns (DeleteConversationResponse) {
+        option (google.api.http) = {
+            delete: "/v1/conversations/{conversation_id}"
+        };
+    }
+
+    rpc MarkMessagesRead(MarkReadRequest) returns (MarkReadResponse) {
+        option (google.api.http) = {
+            post: "/v1/conversations/{conversation_id}/read"
+        };
+    }
+
+    rpc GetUnreadCounts(GetUnreadCountsRequest) returns (GetUnreadCountsResponse) {
+        option (google.api.http) = {
+            get: "/v1/conversations/unread"
+        };
+    }
+
+    // ==========================================
+    // Threaded comments
+    // ==========================================
+
+    rpc ListComments(ListCommentsRequest) returns (ListCommentsResponse) {
+        option (google.api.http) = {
+            get: "/v1/bounties/{bounty_id}/comments"
+        };
+    }
+
+    rpc CreateComment(CreateCommentRequest) returns (CreateCommentResponse) {
+        option (google.api.http) = {
+            post: "/v1/bounties/{bounty_id}/comments"
+            body: "*"
+        };
+    }
+
+    rpc DeleteComment(DeleteCommentRequest) returns (DeleteCommentResponse) {
+        option (google.api.http) = {
+            delete: "/v1/comments/{comment_id}"
+        };
+    }
+
+    rpc ListUserComments(ListUserCommentsRequest) returns (ListUserCommentsResponse) {
+        option (google.api.http) = {
+            get: "/v1/comments"
+        };
+    }
+
+    // ==========================================
+    // 邀请接单系统
+    // ==========================================
+
+    // 悬赏者邀请猎人接单
+    rpc CreateInvitation(CreateInvitationRequest) returns (CreateInvitationResponse) {
+        option (google.api.http) = {
+            post: "/v1/bounties/{bounty_id}/invitations"
+            body: "*"
+        };
+    }
+
+    // 猎人查看收到的邀请
+    rpc GetMyInvitations(GetMyInvitationsRequest) returns (GetMyInvitationsResponse) {
+        option (google.api.http) = {
+            get: "/v1/invitations/received"
+        };
+    }
+
+    // 猎人响应邀请（接受/拒绝）
+    rpc RespondToInvitation(RespondToInvitationRequest) returns (RespondToInvitationResponse) {
+        option (google.api.http) = {
+            post: "/v1/invitations/{invitation_id}/respond"
+            body: "*"
+        };
+    }
+
+    // 悬赏者查看发出的邀请
+    rpc GetMySentInvitations(GetMySentInvitationsRequest) returns (GetMySentInvitationsResponse) {
+        option (google.api.http) = {
+            get: "/v1/invitations/sent"
+        };
+    }
+
+    // 猎人查看自己发出的申请
+    rpc GetMyApplications(GetMyApplicationsRequest) returns (GetMyApplicationsResponse) {
+        option (google.api.http) = {
+            get: "/v1/bounties/applications/received"
+        };
+    }
+}

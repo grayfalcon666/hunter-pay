@@ -1,0 +1,159 @@
+syntax = "proto3";
+
+package pb;
+option go_package = "github.com/grayfalcon666/escrow-bounty/pb";
+
+import "google/protobuf/timestamp.proto";
+import "google/api/annotations.proto";
+
+// ==========================================
+// Bounty-scoped chat (existing)
+// ==========================================
+
+message SendMessageRequest {
+    int64 bounty_id = 1;
+    string content = 2;
+}
+
+message SendMessageResponse {
+    ChatMessage message = 1;
+}
+
+message ListMessagesRequest {
+    int64 bounty_id = 1;
+}
+
+message ListMessagesResponse {
+    repeated ChatMessage messages = 1;
+}
+
+message ChatMessage {
+    int64 id = 1;
+    int64 bounty_id = 2;
+    string sender_username = 3;
+    string content = 4;
+    google.protobuf.Timestamp created_at = 5;
+}
+
+// ==========================================
+// Private chat
+// ==========================================
+
+message GetOrCreateConversationRequest {
+    string other_username = 1;
+}
+
+message GetOrCreateConversationResponse {
+    PrivateConversation conversation = 1;
+}
+
+message ListConversationsRequest {}
+
+message ListConversationsResponse {
+    repeated ConversationSummary conversations = 1;
+    int64 total_unread = 2;
+}
+
+message DeleteConversationRequest {
+    int64 conversation_id = 1;
+}
+
+message DeleteConversationResponse {}
+
+message ConversationSummary {
+    int64 id = 1;
+    string other_username = 2;
+    string last_message_content = 3;
+    int64 last_message_at = 4;
+    int32 unread_count = 5;
+}
+
+message PrivateConversation {
+    int64 id = 1;
+    string user1_username = 2;
+    string user2_username = 3;
+    int64 created_at = 4;
+    int64 updated_at = 5;
+}
+
+message PrivateMessage {
+    int64 id = 1;
+    int64 conversation_id = 2;
+    string sender_username = 3;
+    string content = 4;
+    bool is_read = 5;
+    int64 created_at = 6;
+}
+
+message ListPrivateMessagesRequest {
+    int64 conversation_id = 1;
+    int64 before_id = 2;
+    int32 limit = 3;
+}
+
+message ListPrivateMessagesResponse {
+    repeated PrivateMessage messages = 1;
+    bool has_more = 2;
+}
+
+message MarkReadRequest {
+    int64 conversation_id = 1;
+}
+
+message MarkReadResponse {}
+
+message GetUnreadCountsRequest {}
+
+message GetUnreadCountsResponse {
+    map<int64, int32> counts = 1;
+    int64 total = 2;
+}
+
+// ==========================================
+// Threaded comments
+// ==========================================
+
+message Comment {
+    int64 id = 1;
+    int64 bounty_id = 2;
+    int64 parent_id = 3;
+    string author_username = 4;
+    string content = 5;
+    int64 created_at = 6;
+    repeated Comment replies = 7;
+    string parent_author_username = 8; // for reply quotes
+}
+
+message ListCommentsRequest {
+    int64 bounty_id = 1;
+}
+
+message ListCommentsResponse {
+    repeated Comment comments = 1;
+}
+
+message CreateCommentRequest {
+    int64 bounty_id = 1;
+    int64 parent_id = 2;
+    string content = 3;
+}
+
+message CreateCommentResponse {
+    Comment comment = 1;
+}
+
+message DeleteCommentRequest {
+    int64 comment_id = 1;
+}
+
+message DeleteCommentResponse {}
+
+message ListUserCommentsRequest {
+    string username = 1;
+    int32 page_id = 2;
+    int32 page_size = 3;
+}
+
+message ListUserCommentsResponse {
+    repeated Comment comments = 1;
+}
