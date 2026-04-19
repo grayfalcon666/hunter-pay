@@ -1,0 +1,106 @@
+syntax = "proto3";
+
+package pb;
+
+option go_package = "github.com/grayfalcon666/user-profile-service/pb";
+
+import "google/api/annotations.proto";
+import "common.proto";
+
+message GetProfileRequest {
+    string username = 1;
+}
+
+message GetProfileResponse {
+    UserProfile profile = 1;
+}
+
+message CreateProfileRequest {
+    string expected_salary_min = 1;
+    string expected_salary_max = 2;
+    string work_location = 3;
+    string experience_level = 4;
+    string bio = 5;
+    string avatar_url = 6;
+}
+
+message CreateProfileResponse {
+    UserProfile profile = 1;
+}
+
+message UpdateProfileRequest {
+    string username = 1;
+    string expected_salary_min = 2;
+    string expected_salary_max = 3;
+    string work_location = 4;
+    string experience_level = 5;
+    string bio = 6;
+    string avatar_url = 7;
+    string role = 8;            // HUNTER | POSTER
+}
+
+message UpdateProfileResponse {
+    UserProfile profile = 1;
+}
+
+message RefreshProfileStatsRequest {
+    string username = 1;
+    int64 bounty_id = 2;
+    int32 delta_completed = 3;              // +1 完成, -1 取消
+    int64 delta_earnings = 4;              // 本次悬赏金额（分）
+    int32 delta_posted = 5;                 // +1 发布
+    int32 delta_completed_as_employer = 6;  // 雇主完成数 +1
+}
+
+message RefreshProfileStatsResponse {
+    UserProfile profile = 1;
+}
+
+message SearchUsersRequest {
+    string query = 1;
+    int32 limit = 2;
+}
+
+message SearchUsersResponse {
+    repeated UserSummary users = 1;
+}
+
+message UserSummary {
+    string username = 1;
+}
+
+message InitializeProfileRequest {
+    string username = 1;
+    string request_id = 2;
+    string expected_salary_min = 3;
+    string expected_salary_max = 4;
+    string work_location = 5;
+    string experience_level = 6;
+    string bio = 7;
+    string avatar_url = 8;
+}
+
+message InitializeProfileResponse {
+    UserProfile profile = 1;
+    bool created = 2;
+    string request_id = 3;
+}
+
+message UpdateRoleRequest {
+    string username = 1;
+    string role = 2;     // HUNTER | POSTER
+}
+
+message UpdateRoleResponse {
+    UserProfile profile = 1;
+}
+
+message SearchHuntersRequest {
+    string query = 1;
+    int32 limit = 2;
+    string sort_by = 3;   // completion_rate | good_review_rate | total_bounties_completed
+}
+
+message SearchHuntersResponse {
+    repeated UserProfile hunters = 1;
+}

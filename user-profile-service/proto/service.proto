@@ -1,0 +1,80 @@
+syntax = "proto3";
+
+package pb;
+
+option go_package = "github.com/grayfalcon666/user-profile-service/pb";
+
+import "google/api/annotations.proto";
+import "profile.proto";
+import "review.proto";
+
+service ProfileService {
+    rpc GetProfile (GetProfileRequest) returns (GetProfileResponse) {
+        option (google.api.http) = {
+            get: "/v1/profiles/{username}"
+        };
+    };
+
+    rpc CreateProfile (CreateProfileRequest) returns (CreateProfileResponse) {
+        option (google.api.http) = {
+            post: "/v1/profiles"
+            body: "*"
+        };
+    };
+
+    rpc UpdateProfile (UpdateProfileRequest) returns (UpdateProfileResponse) {
+        option (google.api.http) = {
+            put: "/v1/profiles/{username}"
+            body: "*"
+        };
+    };
+
+    rpc RefreshProfileStats (RefreshProfileStatsRequest) returns (RefreshProfileStatsResponse) {
+        option (google.api.http) = {
+            post: "/v1/admin/profiles/{username}/refresh"
+            body: "*"
+        };
+    };
+
+    rpc CreateReview (CreateReviewRequest) returns (CreateReviewResponse) {
+        option (google.api.http) = {
+            post: "/v1/reviews"
+            body: "*"
+        };
+    };
+
+    rpc GetReviews (GetReviewsRequest) returns (GetReviewsResponse) {
+        option (google.api.http) = {
+            get: "/v1/users/{username}/reviews"
+        };
+    };
+
+    rpc SearchUsers (SearchUsersRequest) returns (SearchUsersResponse) {
+        option (google.api.http) = {
+            get: "/v1/users/search"
+        };
+    };
+
+    // 系统调用：初始化用户资料（用于用户注册后自动创建资料）
+    rpc InitializeProfile (InitializeProfileRequest) returns (InitializeProfileResponse) {
+        option (google.api.http) = {
+            post: "/v1/admin/profiles/{username}/initialize"
+            body: "*"
+        };
+    };
+
+    // 更新用户角色（切换猎人/悬赏者）
+    rpc UpdateRole (UpdateRoleRequest) returns (UpdateRoleResponse) {
+        option (google.api.http) = {
+            put: "/v1/profiles/{username}/role"
+            body: "*"
+        };
+    };
+
+    // 搜索猎人
+    rpc SearchHunters (SearchHuntersRequest) returns (SearchHuntersResponse) {
+        option (google.api.http) = {
+            get: "/v1/hunters/search"
+        };
+    };
+}
