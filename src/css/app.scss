@@ -1,0 +1,228 @@
+// Escrow Bounty Platform — 全局样式
+// 暗黑金融 + 精致几何 美学
+
+@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap');
+
+// ── CSS 变量 ──────────────────────────────────────────────────────────────
+:root {
+  --color-bg-primary:    #0b0d12;
+  --color-bg-secondary:  #13161f;
+  --color-bg-elevated:   #1a1e2a;
+  --color-border:        #2a2f3d;
+  --color-text-primary:  #e8eaf0;
+  --color-text-muted:    #6b7280;
+  --color-accent-gold:   #c9a84c;
+  --color-accent-teal:   #2dd4bf;
+  --color-accent-red:    #f87171;
+  --color-accent-green:  #34d399;
+  --color-accent-amber:  #fbbf24;
+  --color-glow-gold:    rgba(201, 168, 76, 0.15);
+  --color-glow-teal:    rgba(45, 212, 191, 0.15);
+
+  --font-display: 'Oswald', sans-serif;
+  --font-mono:    'JetBrains Mono', monospace;
+  --font-body:    'DM Sans', sans-serif;
+
+  --radius-card: 12px;
+  --radius-btn:  8px;
+  --radius-input: 8px;
+}
+
+// ── 基础 ──────────────────────────────────────────────────────────────────
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body, #q-app {
+  height: 100%;
+  margin: 0;
+  background-color: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+// 噪点纹理背景
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+}
+
+// ── 滚动条 ────────────────────────────────────────────────────────────────
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--color-bg-primary); }
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 3px;
+  &:hover { background: var(--color-text-muted); }
+}
+
+// ── 文字 ──────────────────────────────────────────────────────────────────
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  letter-spacing: 0.02em;
+  margin: 0;
+}
+
+// ── 金额 ──────────────────────────────────────────────────────────────────
+.amount {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--color-accent-gold);
+  letter-spacing: -0.02em;
+}
+
+// ── Quasar 覆盖 ───────────────────────────────────────────────────────────
+
+// 按钮
+.q-btn {
+  border-radius: var(--radius-btn) !important;
+  font-family: var(--font-body);
+  font-weight: 500;
+  text-transform: none;
+  letter-spacing: 0;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+
+  &:hover { transform: translateY(-2px); }
+  &:active { transform: scale(0.97); }
+
+  &.bg-primary {
+    background: var(--color-accent-gold) !important;
+    color: #0b0d12 !important;
+    box-shadow: 0 4px 16px var(--color-glow-gold);
+    &:hover { box-shadow: 0 6px 24px var(--color-glow-gold); }
+  }
+}
+
+// 卡片
+.q-card {
+  background: var(--color-bg-secondary) !important;
+  border: 1px solid var(--color-border) !important;
+  border-radius: var(--radius-card) !important;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  }
+}
+
+// 输入框
+.q-field {
+  .q-field__control {
+    background: var(--color-bg-elevated) !important;
+    border-radius: var(--radius-input) !important;
+    border: 1px solid var(--color-border) !important;
+    &::before { border: none !important; }
+    &:hover { border-color: var(--color-text-muted) !important; }
+  }
+  &.q-field--focused .q-field__control {
+    border-color: var(--color-accent-gold) !important;
+    box-shadow: 0 0 0 2px var(--color-glow-gold) !important;
+  }
+  .q-field__label { color: var(--color-text-muted); }
+  .q-field__native,
+  .q-field__input {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+    caret-color: var(--color-accent-gold);
+  }
+}
+
+// 对话框
+.q-dialog__inner > .q-card {
+  background: var(--color-bg-secondary) !important;
+  border: 1px solid var(--color-border) !important;
+}
+
+// 表格
+.q-table {
+  background: var(--color-bg-secondary) !important;
+  color: var(--color-text-primary);
+  th { color: var(--color-text-muted) !important; font-weight: 600; }
+  tbody tr:nth-child(odd) td { background: rgba(255,255,255,0.02); }
+  td { border-color: var(--color-border) !important; }
+}
+
+// Badge
+.q-badge {
+  font-family: var(--font-mono) !important;
+  font-size: 0.7rem;
+  border-radius: 4px !important;
+  letter-spacing: 0.05em;
+}
+
+// 分割线
+.q-separator { background: var(--color-border) !important; }
+
+// 加载动画
+.q-loading-bar {
+  background: var(--color-accent-gold) !important;
+}
+
+// 导航栏（毛玻璃）
+.q-header {
+  background: rgba(11, 13, 18, 0.85) !important;
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--color-border);
+  box-shadow: 0 1px 0 var(--color-accent-gold);
+}
+
+// 侧边栏
+.q-drawer {
+  background: var(--color-bg-secondary) !important;
+  border-right: 1px solid var(--color-border) !important;
+}
+
+// 菜单项
+.q-item {
+  color: var(--color-text-primary);
+  border-radius: 8px;
+  margin: 2px 8px;
+  transition: background 0.15s ease, color 0.15s ease;
+  &:hover { background: var(--color-bg-elevated); }
+  &.q-router-link--active {
+    background: var(--color-glow-gold);
+    color: var(--color-accent-gold);
+  }
+}
+
+// ── 动画 ──────────────────────────────────────────────────────────────────
+@keyframes cardReveal {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.card-reveal {
+  animation: cardReveal 0.4s ease-out both;
+}
+
+// ── 状态颜色工具 ───────────────────────────────────────────────────────────
+.text-status-paying    { color: var(--color-accent-gold)  !important; }
+.text-status-pending   { color: var(--color-accent-teal)  !important; }
+.text-status-progress { color: var(--color-accent-amber) !important; }
+.text-status-completed { color: var(--color-accent-green) !important; }
+.text-status-canceled  { color: var(--color-accent-red)  !important; }
+.text-status-failed    { color: var(--color-accent-red)  !important; }
+.text-amount           { color: var(--color-accent-gold); font-family: var(--font-mono); }
+
+// ── 暗色模式输入框（最高优先级覆盖 Quasar 默认黑色文字）───
+body.body--dark {
+  .q-field {
+    .q-field__native,
+    .q-field__input {
+      color: #ffffff !important;
+      -webkit-text-fill-color: #ffffff !important;
+    }
+    .q-field__control {
+      background: var(--color-bg-elevated) !important;
+    }
+    .q-field__control:before {
+      border-color: var(--color-border) !important;
+    }
+  }
+}
