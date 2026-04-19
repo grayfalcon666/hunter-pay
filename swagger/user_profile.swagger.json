@@ -1,0 +1,488 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "common.proto",
+    "version": "version not set"
+  },
+  "tags": [
+    {
+      "name": "ProfileService"
+    }
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/v1/admin/profiles/{username}/refresh": {
+      "post": {
+        "operationId": "ProfileService_RefreshProfileStats",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbRefreshProfileStatsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "username",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ProfileServiceRefreshProfileStatsBody"
+            }
+          }
+        ],
+        "tags": [
+          "ProfileService"
+        ]
+      }
+    },
+    "/v1/profiles": {
+      "post": {
+        "operationId": "ProfileService_CreateProfile",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbCreateProfileResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbCreateProfileRequest"
+            }
+          }
+        ],
+        "tags": [
+          "ProfileService"
+        ]
+      }
+    },
+    "/v1/profiles/{username}": {
+      "get": {
+        "operationId": "ProfileService_GetProfile",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbGetProfileResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "username",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "ProfileService"
+        ]
+      },
+      "put": {
+        "operationId": "ProfileService_UpdateProfile",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbUpdateProfileResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "username",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ProfileServiceUpdateProfileBody"
+            }
+          }
+        ],
+        "tags": [
+          "ProfileService"
+        ]
+      }
+    },
+    "/v1/reviews": {
+      "post": {
+        "operationId": "ProfileService_CreateReview",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbCreateReviewResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbCreateReviewRequest"
+            }
+          }
+        ],
+        "tags": [
+          "ProfileService"
+        ]
+      }
+    },
+    "/v1/users/{username}/reviews": {
+      "get": {
+        "operationId": "ProfileService_GetReviews",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbGetReviewsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "username",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "ProfileService"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "ProfileServiceRefreshProfileStatsBody": {
+      "type": "object",
+      "properties": {
+        "bountyId": {
+          "type": "string",
+          "format": "int64"
+        },
+        "deltaCompleted": {
+          "type": "integer",
+          "format": "int32",
+          "title": "+1 完成, -1 取消"
+        },
+        "deltaEarnings": {
+          "type": "string",
+          "format": "int64",
+          "title": "本次悬赏金额（分）"
+        },
+        "deltaPosted": {
+          "type": "integer",
+          "format": "int32",
+          "title": "+1 发布"
+        }
+      }
+    },
+    "ProfileServiceUpdateProfileBody": {
+      "type": "object",
+      "properties": {
+        "expectedSalaryMin": {
+          "type": "string"
+        },
+        "expectedSalaryMax": {
+          "type": "string"
+        },
+        "workLocation": {
+          "type": "string"
+        },
+        "experienceLevel": {
+          "type": "string"
+        },
+        "bio": {
+          "type": "string"
+        },
+        "avatarUrl": {
+          "type": "string"
+        }
+      }
+    },
+    "pbCreateProfileRequest": {
+      "type": "object",
+      "properties": {
+        "expectedSalaryMin": {
+          "type": "string"
+        },
+        "expectedSalaryMax": {
+          "type": "string"
+        },
+        "workLocation": {
+          "type": "string"
+        },
+        "experienceLevel": {
+          "type": "string"
+        },
+        "bio": {
+          "type": "string"
+        },
+        "avatarUrl": {
+          "type": "string"
+        }
+      }
+    },
+    "pbCreateProfileResponse": {
+      "type": "object",
+      "properties": {
+        "profile": {
+          "$ref": "#/definitions/pbUserProfile"
+        }
+      }
+    },
+    "pbCreateReviewRequest": {
+      "type": "object",
+      "properties": {
+        "reviewedUsername": {
+          "type": "string"
+        },
+        "bountyId": {
+          "type": "string",
+          "format": "int64"
+        },
+        "rating": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "comment": {
+          "type": "string"
+        },
+        "reviewType": {
+          "type": "string",
+          "title": "EMPLOYER_TO_HUNTER | HUNTER_TO_EMPLOYER"
+        }
+      }
+    },
+    "pbCreateReviewResponse": {
+      "type": "object",
+      "properties": {
+        "review": {
+          "$ref": "#/definitions/pbUserReview"
+        }
+      }
+    },
+    "pbGetProfileResponse": {
+      "type": "object",
+      "properties": {
+        "profile": {
+          "$ref": "#/definitions/pbUserProfile"
+        }
+      }
+    },
+    "pbGetReviewsResponse": {
+      "type": "object",
+      "properties": {
+        "reviews": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/pbUserReview"
+          }
+        }
+      }
+    },
+    "pbRefreshProfileStatsResponse": {
+      "type": "object",
+      "properties": {
+        "profile": {
+          "$ref": "#/definitions/pbUserProfile"
+        }
+      }
+    },
+    "pbUpdateProfileResponse": {
+      "type": "object",
+      "properties": {
+        "profile": {
+          "$ref": "#/definitions/pbUserProfile"
+        }
+      }
+    },
+    "pbUserProfile": {
+      "type": "object",
+      "properties": {
+        "username": {
+          "type": "string"
+        },
+        "expectedSalaryMin": {
+          "type": "string",
+          "title": "单位：分，0 表示未填写"
+        },
+        "expectedSalaryMax": {
+          "type": "string"
+        },
+        "workLocation": {
+          "type": "string",
+          "description": "\"Remote\", \"Beijing\", ..."
+        },
+        "experienceLevel": {
+          "type": "string",
+          "title": "ENTRY | JUNIOR | MID | SENIOR | EXPERT"
+        },
+        "bio": {
+          "type": "string"
+        },
+        "avatarUrl": {
+          "type": "string"
+        },
+        "completionRate": {
+          "type": "number",
+          "format": "double",
+          "title": "0.0 ~ 1.0"
+        },
+        "goodReviewRate": {
+          "type": "number",
+          "format": "double",
+          "title": "0.0 ~ 1.0"
+        },
+        "totalBountiesPosted": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "totalBountiesCompleted": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "totalEarnings": {
+          "type": "string",
+          "format": "int64",
+          "title": "单位：分"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "pbUserReview": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "int64"
+        },
+        "reviewerUsername": {
+          "type": "string"
+        },
+        "reviewedUsername": {
+          "type": "string"
+        },
+        "bountyId": {
+          "type": "string",
+          "format": "int64"
+        },
+        "rating": {
+          "type": "integer",
+          "format": "int32",
+          "title": "1 ~ 5"
+        },
+        "comment": {
+          "type": "string"
+        },
+        "reviewType": {
+          "type": "string",
+          "title": "EMPLOYER_TO_HUNTER | HUNTER_TO_EMPLOYER"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": {}
+    },
+    "rpcStatus": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    }
+  }
+}

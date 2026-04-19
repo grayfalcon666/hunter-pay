@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Payment Service API - Swagger UI</title>
+  <link rel="stylesheet" type="text/css" href="swagger-ui/swagger-ui.css" />
+  <link rel="stylesheet" type="text/css" href="swagger-ui/index.css" />
+  <link rel="icon" type="image/png" href="swagger-ui/favicon-32x32.png" sizes="32x32" />
+</head>
+<body>
+  <div id="swagger-ui"></div>
+  <script src="swagger-ui/swagger-ui-bundle.js" charset="UTF-8"></script>
+  <script src="swagger-ui/swagger-ui-standalone-preset.js" charset="UTF-8"></script>
+  <script>
+    window.onload = function() {
+      window.ui = SwaggerUIBundle({
+        url: "payment_service.swagger.json",
+        dom_id: '#swagger-ui',
+        deepLinking: true,
+        presets: [SwaggerUIBundle.presets.apis, SwaggerUIStandalonePreset],
+        plugins: [SwaggerUIBundle.plugins.DownloadUrl],
+        layout: "StandaloneLayout"
+      });
+    };
+  </script>
+</body>
+</html>
