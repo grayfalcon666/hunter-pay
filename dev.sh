@@ -25,31 +25,39 @@ start() {
   CLR_RESET="#[fg=colour250]"
 
   # Start window numbering from 1 instead of 0
-  tmux set-option -g base-index 1
+  tmux set-option -t "$SESSION" -g base-index 1
 
   # ── Create session with first window (gateway) ──────────────────────────────
-  tmux new-session -d -s "$SESSION" -n "gateway" "
-    echo 'Starting gateway...'
-    cd gateway && go run main.go
-  "
+  tmux new-session -d -s "$SESSION" -n "gateway"
+  tmux send-keys -t "$SESSION:gateway" "echo 'Starting gateway...'" C-m
+  tmux send-keys -t "$SESSION:gateway" "cd gateway && go run main.go" C-m
 
-  tmux set-window-option -t "$SESSION:gateway"   window-status-format " #1: gateway "
-  tmux set-window-option -t "$SESSION:gateway"   window-status-current-format " #1: $CLR_GATEWAY gateway $CLR_RESET "
+  # Set colored status for each window
+  tmux set-window-option -t "$SESSION:gateway" window-status-current-format " #I: $CLR_GATEWAY gateway $CLR_RESET "
 
   # ── Remaining services as additional windows ─────────────────────────────────
-  tmux new-window -t "$SESSION" -n "simplebank"    "cd simplebank && go run main.go"
-  tmux new-window -t "$SESSION" -n "escrow-bounty" "cd escrow-bounty && go run main.go"
-  tmux new-window -t "$SESSION" -n "user-profile"  "cd user-profile-service && go run main.go"
-  tmux new-window -t "$SESSION" -n "payment"        "cd payment-service && go run main.go"
+  tmux new-window -t "$SESSION" -n "simplebank"
+  tmux send-keys -t "$SESSION:simplebank" "cd simplebank && go run main.go" C-m
 
-  tmux set-window-option -t "$SESSION:simplebank"    window-status-current-format " #1: $CLR_SIMPLEBANK simplebank $CLR_RESET "
-  tmux set-window-option -t "$SESSION:escrow-bounty" window-status-current-format " #1: $CLR_ESCROW escrow-bounty $CLR_RESET "
-  tmux set-window-option -t "$SESSION:user-profile"  window-status-current-format " #1: $CLR_PROFILE user-profile $CLR_RESET "
-  tmux set-window-option -t "$SESSION:payment"       window-status-current-format " #1: $CLR_PAYMENT payment $CLR_RESET "
+  tmux new-window -t "$SESSION" -n "escrow-bounty"
+  tmux send-keys -t "$SESSION:escrow-bounty" "cd escrow-bounty && go run main.go" C-m
 
-  tmux set-window-option -g window-status-format " #1: #W "
-  tmux set-window-option -g window-status-current-format " #1: #W "
+  tmux new-window -t "$SESSION" -n "user-profile"
+  tmux send-keys -t "$SESSION:user-profile" "cd user-profile-service && go run main.go" C-m
 
+  tmux new-window -t "$SESSION" -n "payment"
+  tmux send-keys -t "$SESSION:payment" "cd payment-service && go run main.go" C-m
+
+  # Apply colors to all windows
+  tmux set-window-option -t "$SESSION:simplebank" window-status-current-format " #I: $CLR_SIMPLEBANK simplebank $CLR_RESET "
+  tmux set-window-option -t "$SESSION:escrow-bounty" window-status-current-format " #I: $CLR_ESCROW escrow-bounty $CLR_RESET "
+  tmux set-window-option -t "$SESSION:user-profile" window-status-current-format " #I: $CLR_PROFILE user-profile $CLR_RESET "
+  tmux set-window-option -t "$SESSION:payment" window-status-current-format " #I: $CLR_PAYMENT payment $CLR_RESET "
+
+  # Default window format (NO GLOBAL OVERRIDE!)
+  tmux set-window-option -t "$SESSION" window-status-format " #I: #W "
+
+  # Attach to the session
   tmux attach-session -t "$SESSION"
 }
 

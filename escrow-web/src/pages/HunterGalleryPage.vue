@@ -75,8 +75,8 @@
                 <span class="stat-label">完成</span>
               </div>
               <div class="stat">
-                <span class="stat-value">{{ displayPercent(hunter.completionRate) }}</span>
-                <span class="stat-label">完成率</span>
+                <span class="stat-value">{{ displayPercent(hunter.goodReviewRate ?? hunter.good_review_rate) }}</span>
+                <span class="stat-label">好评率</span>
               </div>
               <div class="stat">
                 <span class="stat-value">{{ hunter.hunterFulfillmentIndex ?? '—' }}</span>
@@ -125,8 +125,8 @@
               <span class="d-key">完成</span>
             </div>
             <div class="d-stat">
-              <span class="d-val">{{ displayPercent(selectedHunter.completionRate) }}</span>
-              <span class="d-key">完成率</span>
+              <span class="d-val">{{ displayPercent(selectedHunter.goodReviewRate ?? selectedHunter.good_review_rate) }}</span>
+              <span class="d-key">好评率</span>
             </div>
             <div class="d-stat">
               <span class="d-val">{{ formatYuan(selectedHunter.totalEarnings) }}</span>
@@ -233,7 +233,7 @@ const bountyStore = useBountyStore()
 const loading = ref(false)
 const hunters = ref([])
 const searchQuery = ref('')
-const sortBy = ref('completion_rate')
+const sortBy = ref('good_review_rate')
 const drawerOpen = ref(false)
 const selectedHunter = ref(null)
 const showInviteDialog = ref(false)
@@ -242,8 +242,8 @@ const myBounties = ref([])
 const selectedBountyId = ref(null)
 
 const sortOptions = [
-  { label: '完成率', value: 'completion_rate' },
-  { label: '履约', value: 'good_review_rate' },
+  { label: '好评率', value: 'good_review_rate' },
+  { label: '履约', value: 'fulfillment' },
   { label: '完成量', value: 'total_bounties_completed' },
 ]
 
@@ -258,9 +258,9 @@ async function doSearch() {
     const params = { query: searchQuery.value || '', limit: 30, sort_by: sortBy.value }
     const data = await apiClient.get('/hunters/search', { params })
     let list = data.hunters || []
-    if (sortBy.value === 'completion_rate') {
-      list = [...list].sort((a, b) => (b.completionRate ?? b.completion_rate) - (a.completionRate ?? a.completion_rate))
-    } else if (sortBy.value === 'good_review_rate') {
+    if (sortBy.value === 'good_review_rate') {
+      list = [...list].sort((a, b) => (b.goodReviewRate ?? b.good_review_rate ?? 0) - (a.goodReviewRate ?? a.good_review_rate ?? 0))
+    } else if (sortBy.value === 'fulfillment') {
       list = [...list].sort((a, b) => (b.hunterFulfillmentIndex ?? 50) - (a.hunterFulfillmentIndex ?? 50))
     } else if (sortBy.value === 'total_bounties_completed') {
       list = [...list].sort((a, b) => (b.totalBountiesCompleted ?? b.total_bounties_completed) - (a.totalBountiesCompleted ?? a.total_bounties_completed))

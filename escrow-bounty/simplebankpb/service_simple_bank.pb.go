@@ -25,7 +25,7 @@ var File_service_simple_bank_proto protoreflect.FileDescriptor
 
 const file_service_simple_bank_proto_rawDesc = "" +
 	"\n" +
-	"\x19service_simple_bank.proto\x12\x02pb\x1a\x1cgoogle/api/annotations.proto\x1a\x15rpc_create_user.proto\x1a\x14rpc_login_user.proto\x1a\x16rpc_verify_email.proto\x1a\x15rpc_update_user.proto\x1a\x15rpc_transfer_tx.proto\x1a\x18rpc_create_account.proto\x1a\x15rpc_get_account.proto\x1a\x17rpc_list_accounts.proto\x1a\x18rpc_list_transfers.proto\x1a\x10rpc_bounty.proto2\x83\b\n" +
+	"\x19service_simple_bank.proto\x12\x02pb\x1a\x1cgoogle/api/annotations.proto\x1a\x15rpc_create_user.proto\x1a\x14rpc_login_user.proto\x1a\x16rpc_verify_email.proto\x1a\x15rpc_update_user.proto\x1a\x15rpc_transfer_tx.proto\x1a\x18rpc_create_account.proto\x1a\x15rpc_get_account.proto\x1a\x17rpc_list_accounts.proto\x1a\x18rpc_list_transfers.proto\x1a\x10rpc_bounty.proto2\xda\b\n" +
 	"\n" +
 	"SimpleBank\x12W\n" +
 	"\n" +
@@ -43,35 +43,38 @@ const file_service_simple_bank_proto_rawDesc = "" +
 	"\x06Freeze\x12\x11.pb.FreezeRequest\x1a\x12.pb.FreezeResponse\"\x00\x127\n" +
 	"\bUnfreeze\x12\x13.pb.UnfreezeRequest\x1a\x14.pb.UnfreezeResponse\"\x00\x12C\n" +
 	"\fBountyPayout\x12\x17.pb.BountyPayoutRequest\x1a\x18.pb.BountyPayoutResponse\"\x00\x124\n" +
-	"\aDeposit\x12\x12.pb.DepositRequest\x1a\x13.pb.DepositResponse\"\x00B\x0fZ\rsimplebank/pbb\x06proto3"
+	"\aDeposit\x12\x12.pb.DepositRequest\x1a\x13.pb.DepositResponse\"\x00\x12U\n" +
+	"\x12WithdrawFromFrozen\x12\x1d.pb.WithdrawFromFrozenRequest\x1a\x1e.pb.WithdrawFromFrozenResponse\"\x00B\x0fZ\rsimplebank/pbb\x06proto3"
 
 var file_service_simple_bank_proto_goTypes = []any{
-	(*CreateUserRequest)(nil),     // 0: pb.CreateUserRequest
-	(*CreateAccountRequest)(nil),  // 1: pb.CreateAccountRequest
-	(*LoginUserRequest)(nil),      // 2: pb.LoginUserRequest
-	(*VerifyEmailRequest)(nil),    // 3: pb.VerifyEmailRequest
-	(*UpdateUserRequest)(nil),     // 4: pb.UpdateUserRequest
-	(*TransferTxRequest)(nil),     // 5: pb.TransferTxRequest
-	(*GetAccountRequest)(nil),     // 6: pb.GetAccountRequest
-	(*ListAccountsRequest)(nil),   // 7: pb.ListAccountsRequest
-	(*ListTransfersRequest)(nil),  // 8: pb.ListTransfersRequest
-	(*FreezeRequest)(nil),         // 9: pb.FreezeRequest
-	(*UnfreezeRequest)(nil),       // 10: pb.UnfreezeRequest
-	(*BountyPayoutRequest)(nil),   // 11: pb.BountyPayoutRequest
-	(*DepositRequest)(nil),        // 12: pb.DepositRequest
-	(*CreateUserResponse)(nil),    // 13: pb.CreateUserResponse
-	(*CreateAccountResponse)(nil), // 14: pb.CreateAccountResponse
-	(*LoginUserResponse)(nil),     // 15: pb.LoginUserResponse
-	(*VerifyEmailResponse)(nil),   // 16: pb.VerifyEmailResponse
-	(*UpdateUserResponse)(nil),    // 17: pb.UpdateUserResponse
-	(*TransferTxResponse)(nil),    // 18: pb.TransferTxResponse
-	(*GetAccountResponse)(nil),    // 19: pb.GetAccountResponse
-	(*ListAccountsResponse)(nil),  // 20: pb.ListAccountsResponse
-	(*ListTransfersResponse)(nil), // 21: pb.ListTransfersResponse
-	(*FreezeResponse)(nil),        // 22: pb.FreezeResponse
-	(*UnfreezeResponse)(nil),      // 23: pb.UnfreezeResponse
-	(*BountyPayoutResponse)(nil),  // 24: pb.BountyPayoutResponse
-	(*DepositResponse)(nil),       // 25: pb.DepositResponse
+	(*CreateUserRequest)(nil),          // 0: pb.CreateUserRequest
+	(*CreateAccountRequest)(nil),       // 1: pb.CreateAccountRequest
+	(*LoginUserRequest)(nil),           // 2: pb.LoginUserRequest
+	(*VerifyEmailRequest)(nil),         // 3: pb.VerifyEmailRequest
+	(*UpdateUserRequest)(nil),          // 4: pb.UpdateUserRequest
+	(*TransferTxRequest)(nil),          // 5: pb.TransferTxRequest
+	(*GetAccountRequest)(nil),          // 6: pb.GetAccountRequest
+	(*ListAccountsRequest)(nil),        // 7: pb.ListAccountsRequest
+	(*ListTransfersRequest)(nil),       // 8: pb.ListTransfersRequest
+	(*FreezeRequest)(nil),              // 9: pb.FreezeRequest
+	(*UnfreezeRequest)(nil),            // 10: pb.UnfreezeRequest
+	(*BountyPayoutRequest)(nil),        // 11: pb.BountyPayoutRequest
+	(*DepositRequest)(nil),             // 12: pb.DepositRequest
+	(*WithdrawFromFrozenRequest)(nil),  // 13: pb.WithdrawFromFrozenRequest
+	(*CreateUserResponse)(nil),         // 14: pb.CreateUserResponse
+	(*CreateAccountResponse)(nil),      // 15: pb.CreateAccountResponse
+	(*LoginUserResponse)(nil),          // 16: pb.LoginUserResponse
+	(*VerifyEmailResponse)(nil),        // 17: pb.VerifyEmailResponse
+	(*UpdateUserResponse)(nil),         // 18: pb.UpdateUserResponse
+	(*TransferTxResponse)(nil),         // 19: pb.TransferTxResponse
+	(*GetAccountResponse)(nil),         // 20: pb.GetAccountResponse
+	(*ListAccountsResponse)(nil),       // 21: pb.ListAccountsResponse
+	(*ListTransfersResponse)(nil),      // 22: pb.ListTransfersResponse
+	(*FreezeResponse)(nil),             // 23: pb.FreezeResponse
+	(*UnfreezeResponse)(nil),           // 24: pb.UnfreezeResponse
+	(*BountyPayoutResponse)(nil),       // 25: pb.BountyPayoutResponse
+	(*DepositResponse)(nil),            // 26: pb.DepositResponse
+	(*WithdrawFromFrozenResponse)(nil), // 27: pb.WithdrawFromFrozenResponse
 }
 var file_service_simple_bank_proto_depIdxs = []int32{
 	0,  // 0: pb.SimpleBank.CreateUser:input_type -> pb.CreateUserRequest
@@ -87,21 +90,23 @@ var file_service_simple_bank_proto_depIdxs = []int32{
 	10, // 10: pb.SimpleBank.Unfreeze:input_type -> pb.UnfreezeRequest
 	11, // 11: pb.SimpleBank.BountyPayout:input_type -> pb.BountyPayoutRequest
 	12, // 12: pb.SimpleBank.Deposit:input_type -> pb.DepositRequest
-	13, // 13: pb.SimpleBank.CreateUser:output_type -> pb.CreateUserResponse
-	14, // 14: pb.SimpleBank.CreateAccount:output_type -> pb.CreateAccountResponse
-	15, // 15: pb.SimpleBank.LoginUser:output_type -> pb.LoginUserResponse
-	16, // 16: pb.SimpleBank.VerifyEmail:output_type -> pb.VerifyEmailResponse
-	17, // 17: pb.SimpleBank.UpdateUser:output_type -> pb.UpdateUserResponse
-	18, // 18: pb.SimpleBank.Transfer:output_type -> pb.TransferTxResponse
-	19, // 19: pb.SimpleBank.GetAccount:output_type -> pb.GetAccountResponse
-	20, // 20: pb.SimpleBank.ListAccounts:output_type -> pb.ListAccountsResponse
-	21, // 21: pb.SimpleBank.ListTransfers:output_type -> pb.ListTransfersResponse
-	22, // 22: pb.SimpleBank.Freeze:output_type -> pb.FreezeResponse
-	23, // 23: pb.SimpleBank.Unfreeze:output_type -> pb.UnfreezeResponse
-	24, // 24: pb.SimpleBank.BountyPayout:output_type -> pb.BountyPayoutResponse
-	25, // 25: pb.SimpleBank.Deposit:output_type -> pb.DepositResponse
-	13, // [13:26] is the sub-list for method output_type
-	0,  // [0:13] is the sub-list for method input_type
+	13, // 13: pb.SimpleBank.WithdrawFromFrozen:input_type -> pb.WithdrawFromFrozenRequest
+	14, // 14: pb.SimpleBank.CreateUser:output_type -> pb.CreateUserResponse
+	15, // 15: pb.SimpleBank.CreateAccount:output_type -> pb.CreateAccountResponse
+	16, // 16: pb.SimpleBank.LoginUser:output_type -> pb.LoginUserResponse
+	17, // 17: pb.SimpleBank.VerifyEmail:output_type -> pb.VerifyEmailResponse
+	18, // 18: pb.SimpleBank.UpdateUser:output_type -> pb.UpdateUserResponse
+	19, // 19: pb.SimpleBank.Transfer:output_type -> pb.TransferTxResponse
+	20, // 20: pb.SimpleBank.GetAccount:output_type -> pb.GetAccountResponse
+	21, // 21: pb.SimpleBank.ListAccounts:output_type -> pb.ListAccountsResponse
+	22, // 22: pb.SimpleBank.ListTransfers:output_type -> pb.ListTransfersResponse
+	23, // 23: pb.SimpleBank.Freeze:output_type -> pb.FreezeResponse
+	24, // 24: pb.SimpleBank.Unfreeze:output_type -> pb.UnfreezeResponse
+	25, // 25: pb.SimpleBank.BountyPayout:output_type -> pb.BountyPayoutResponse
+	26, // 26: pb.SimpleBank.Deposit:output_type -> pb.DepositResponse
+	27, // 27: pb.SimpleBank.WithdrawFromFrozen:output_type -> pb.WithdrawFromFrozenResponse
+	14, // [14:28] is the sub-list for method output_type
+	0,  // [0:14] is the sub-list for method input_type
 	0,  // [0:0] is the sub-list for extension type_name
 	0,  // [0:0] is the sub-list for extension extendee
 	0,  // [0:0] is the sub-list for field type_name

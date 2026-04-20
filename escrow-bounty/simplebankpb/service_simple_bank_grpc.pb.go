@@ -19,19 +19,20 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	SimpleBank_CreateUser_FullMethodName    = "/pb.SimpleBank/CreateUser"
-	SimpleBank_CreateAccount_FullMethodName = "/pb.SimpleBank/CreateAccount"
-	SimpleBank_LoginUser_FullMethodName     = "/pb.SimpleBank/LoginUser"
-	SimpleBank_VerifyEmail_FullMethodName   = "/pb.SimpleBank/VerifyEmail"
-	SimpleBank_UpdateUser_FullMethodName    = "/pb.SimpleBank/UpdateUser"
-	SimpleBank_Transfer_FullMethodName      = "/pb.SimpleBank/Transfer"
-	SimpleBank_GetAccount_FullMethodName    = "/pb.SimpleBank/GetAccount"
-	SimpleBank_ListAccounts_FullMethodName  = "/pb.SimpleBank/ListAccounts"
-	SimpleBank_ListTransfers_FullMethodName = "/pb.SimpleBank/ListTransfers"
-	SimpleBank_Freeze_FullMethodName        = "/pb.SimpleBank/Freeze"
-	SimpleBank_Unfreeze_FullMethodName      = "/pb.SimpleBank/Unfreeze"
-	SimpleBank_BountyPayout_FullMethodName  = "/pb.SimpleBank/BountyPayout"
-	SimpleBank_Deposit_FullMethodName       = "/pb.SimpleBank/Deposit"
+	SimpleBank_CreateUser_FullMethodName         = "/pb.SimpleBank/CreateUser"
+	SimpleBank_CreateAccount_FullMethodName      = "/pb.SimpleBank/CreateAccount"
+	SimpleBank_LoginUser_FullMethodName          = "/pb.SimpleBank/LoginUser"
+	SimpleBank_VerifyEmail_FullMethodName        = "/pb.SimpleBank/VerifyEmail"
+	SimpleBank_UpdateUser_FullMethodName         = "/pb.SimpleBank/UpdateUser"
+	SimpleBank_Transfer_FullMethodName           = "/pb.SimpleBank/Transfer"
+	SimpleBank_GetAccount_FullMethodName         = "/pb.SimpleBank/GetAccount"
+	SimpleBank_ListAccounts_FullMethodName       = "/pb.SimpleBank/ListAccounts"
+	SimpleBank_ListTransfers_FullMethodName      = "/pb.SimpleBank/ListTransfers"
+	SimpleBank_Freeze_FullMethodName             = "/pb.SimpleBank/Freeze"
+	SimpleBank_Unfreeze_FullMethodName           = "/pb.SimpleBank/Unfreeze"
+	SimpleBank_BountyPayout_FullMethodName       = "/pb.SimpleBank/BountyPayout"
+	SimpleBank_Deposit_FullMethodName            = "/pb.SimpleBank/Deposit"
+	SimpleBank_WithdrawFromFrozen_FullMethodName = "/pb.SimpleBank/WithdrawFromFrozen"
 )
 
 // SimpleBankClient is the client API for SimpleBank service.
@@ -51,6 +52,7 @@ type SimpleBankClient interface {
 	Unfreeze(ctx context.Context, in *UnfreezeRequest, opts ...grpc.CallOption) (*UnfreezeResponse, error)
 	BountyPayout(ctx context.Context, in *BountyPayoutRequest, opts ...grpc.CallOption) (*BountyPayoutResponse, error)
 	Deposit(ctx context.Context, in *DepositRequest, opts ...grpc.CallOption) (*DepositResponse, error)
+	WithdrawFromFrozen(ctx context.Context, in *WithdrawFromFrozenRequest, opts ...grpc.CallOption) (*WithdrawFromFrozenResponse, error)
 }
 
 type simpleBankClient struct {
@@ -191,6 +193,16 @@ func (c *simpleBankClient) Deposit(ctx context.Context, in *DepositRequest, opts
 	return out, nil
 }
 
+func (c *simpleBankClient) WithdrawFromFrozen(ctx context.Context, in *WithdrawFromFrozenRequest, opts ...grpc.CallOption) (*WithdrawFromFrozenResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(WithdrawFromFrozenResponse)
+	err := c.cc.Invoke(ctx, SimpleBank_WithdrawFromFrozen_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // SimpleBankServer is the server API for SimpleBank service.
 // All implementations must embed UnimplementedSimpleBankServer
 // for forward compatibility.
@@ -208,6 +220,7 @@ type SimpleBankServer interface {
 	Unfreeze(context.Context, *UnfreezeRequest) (*UnfreezeResponse, error)
 	BountyPayout(context.Context, *BountyPayoutRequest) (*BountyPayoutResponse, error)
 	Deposit(context.Context, *DepositRequest) (*DepositResponse, error)
+	WithdrawFromFrozen(context.Context, *WithdrawFromFrozenRequest) (*WithdrawFromFrozenResponse, error)
 	mustEmbedUnimplementedSimpleBankServer()
 }
 
@@ -256,6 +269,9 @@ func (UnimplementedSimpleBankServer) BountyPayout(context.Context, *BountyPayout
 }
 func (UnimplementedSimpleBankServer) Deposit(context.Context, *DepositRequest) (*DepositResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method Deposit not implemented")
+}
+func (UnimplementedSimpleBankServer) WithdrawFromFrozen(context.Context, *WithdrawFromFrozenRequest) (*WithdrawFromFrozenResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method WithdrawFromFrozen not implemented")
 }
 func (UnimplementedSimpleBankServer) mustEmbedUnimplementedSimpleBankServer() {}
 func (UnimplementedSimpleBankServer) testEmbeddedByValue()                    {}
@@ -512,6 +528,24 @@ func _SimpleBank_Deposit_Handler(srv interface{}, ctx context.Context, dec func(
 	return interceptor(ctx, in, info, handler)
 }
 
+func _SimpleBank_WithdrawFromFrozen_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(WithdrawFromFrozenRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SimpleBankServer).WithdrawFromFrozen(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: SimpleBank_WithdrawFromFrozen_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SimpleBankServer).WithdrawFromFrozen(ctx, req.(*WithdrawFromFrozenRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // SimpleBank_ServiceDesc is the grpc.ServiceDesc for SimpleBank service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -570,6 +604,10 @@ var SimpleBank_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Deposit",
 			Handler:    _SimpleBank_Deposit_Handler,
+		},
+		{
+			MethodName: "WithdrawFromFrozen",
+			Handler:    _SimpleBank_WithdrawFromFrozen_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
