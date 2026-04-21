@@ -75,6 +75,7 @@ func main() {
 				"/bounties/:bounty_id/invitations": "/v1/bounties/{bounty_id}/invitations",
 			},
 			MethodRoutes: map[string]string{
+				"POST /bounties":              "/v1/bounties",
 				"GET /bounties":               "/v1/bounties",
 				"DELETE /bounties/:bounty_id": "/bounties/{bounty_id}",
 				"GET /bounties/:bounty_id":    "/v1/bounties/{bounty_id}",

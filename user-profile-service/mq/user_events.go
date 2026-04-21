@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"sync"
 	"time"
 
 	"github.com/streadway/amqp"
@@ -12,28 +13,30 @@ import (
 
 const (
 	// 复用 SimpleBank 的配置
-	UserExchange       = "user_exchange"
-	UserCreatedQueue   = "user_created_queue"
-	UserProfileQueue   = "user_profile_queue"
-	UserAccountQueue   = "user_account_queue"
-	UserInitDLX        = "user_init_dlx"
-	UserInitDLQ        = "user_init_dlq"
+	UserExchange     = "user_exchange"
+	UserCreatedQueue = "user_created_queue"
+	UserProfileQueue = "user_profile_queue"
+	UserAccountQueue = "user_account_queue"
+	UserInitDLX      = "user_init_dlx"
+	UserInitDLQ      = "user_init_dlq"
 
 	UserCreatedRoutingKey = "user.created"
 	UserProfileRoutingKey = "user.profile.created"
 	UserAccountRoutingKey = "user.account.created"
 
 	// ProfileUpdateQueue from escrow-bounty
-	ProfileUpdateQueue     = "profile_update_queue"
+	ProfileUpdateQueue      = "profile_update_queue"
 	ProfileUpdateRoutingKey = "profile.update"
-	ProfileUpdateDLX       = "profile_update_dlx"
-	ProfileUpdateDLQ       = "profile_update_dlq"
+	ProfileUpdateDLX        = "profile_update_dlx"
+	ProfileUpdateDLQ        = "profile_update_dlq"
 )
 
 // UserEventProducer 用户事件生产者
 type UserEventProducer struct {
-	conn    *amqp.Connection
-	channel *amqp.Channel
+	conn     *amqp.Connection
+	channel  *amqp.Channel
+	confirms chan amqp.Confirmation // 全局唯一的确认通道
+	mu       sync.Mutex
 }
 
 func NewUserEventProducer(amqpURL string) (*UserEventProducer, error) {
@@ -89,10 +92,13 @@ func NewUserEventProducer(amqpURL string) (*UserEventProducer, error) {
 		}
 	}
 
+	confirms := ch.NotifyPublish(make(chan amqp.Confirmation, 1))
+
 	log.Println("RabbitMQ 用户事件生产者初始化成功")
 	return &UserEventProducer{
-		conn:    conn,
-		channel: ch,
+		conn:     conn,
+		channel:  ch,
+		confirms: confirms,
 	}, nil
 }
 
@@ -129,7 +135,8 @@ func (p *UserEventProducer) PublishProfileCreatedEvent(ctx context.Context, even
 		return fmt.Errorf("序列化事件失败：%w", err)
 	}
 
-	confirms := p.channel.NotifyPublish(make(chan amqp.Confirmation, 1))
+	p.mu.Lock()
+	defer p.mu.Unlock()
 
 	routingKey := UserProfileRoutingKey
 	if !event.Success {
@@ -153,7 +160,7 @@ func (p *UserEventProducer) PublishProfileCreatedEvent(ctx context.Context, even
 	}
 
 	select {
-	case confirmed := <-confirms:
+	case confirmed := <-p.confirms:
 		if confirmed.Ack {
 			log.Printf("用户资料创建事件已发布：%s (success=%v)\n", event.Username, event.Success)
 			return nil
@@ -173,13 +180,13 @@ func (p *UserEventProducer) Close() {
 
 // ProfileUpdateEvent 用户画像更新事件（来自 escrow-bounty）
 type ProfileUpdateEvent struct {
-	Username                  string `json:"username"`
-	BountyID                  int64  `json:"bounty_id"`
-	DeltaCompleted            int32  `json:"delta_completed"`
-	DeltaEarnings             int64  `json:"delta_earnings"`
-	DeltaPosted               int32  `json:"delta_posted"`
-	DeltaCompletedAsEmployer  int32  `json:"delta_completed_as_employer"`
-	RequestID                 string `json:"request_id"`
+	Username                 string `json:"username"`
+	BountyID                 int64  `json:"bounty_id"`
+	DeltaCompleted           int32  `json:"delta_completed"`
+	DeltaEarnings            int64  `json:"delta_earnings"`
+	DeltaPosted              int32  `json:"delta_posted"`
+	DeltaCompletedAsEmployer int32  `json:"delta_completed_as_employer"`
+	RequestID                string `json:"request_id"`
 }
 
 // PublishFulfillmentRecalcEvent publishes a fulfillment recalculation event via RabbitMQ.
@@ -190,7 +197,8 @@ func (p *UserEventProducer) PublishFulfillmentRecalcEvent(ctx context.Context, e
 		return fmt.Errorf("序列化事件失败：%w", err)
 	}
 
-	confirms := p.channel.NotifyPublish(make(chan amqp.Confirmation, 1))
+	p.mu.Lock()
+	defer p.mu.Unlock()
 
 	err = p.channel.Publish(
 		UserExchange,
@@ -209,7 +217,7 @@ func (p *UserEventProducer) PublishFulfillmentRecalcEvent(ctx context.Context, e
 	}
 
 	select {
-	case confirmed := <-confirms:
+	case confirmed := <-p.confirms:
 		if confirmed.Ack {
 			log.Printf("履约重算事件已发布：username=%s, role=%s\n", event.Username, event.Role)
 			return nil

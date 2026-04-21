@@ -20,10 +20,11 @@ const (
 )
 
 type Producer struct {
-	conn    *amqp.Connection
-	channel *amqp.Channel
-	amqpURL string
-	mu      sync.Mutex // 保护 channel 的并发访问
+	conn     *amqp.Connection
+	channel  *amqp.Channel
+	amqpURL  string
+	mu       sync.Mutex
+	confirms chan amqp.Confirmation
 }
 
 func NewProducer(amqpURL string) (*Producer, error) {
@@ -52,6 +53,9 @@ func (p *Producer) connect() error {
 		conn.Close()
 		return fmt.Errorf("开启 Publisher Confirms 失败: %w", err)
 	}
+
+	p.confirms = make(chan amqp.Confirmation, 100)
+	ch.NotifyPublish(p.confirms)
 
 	// 声明死信交换机
 	err = ch.ExchangeDeclare(PaymentDLX, "direct", true, false, false, false, nil)
@@ -150,14 +154,12 @@ func (p *Producer) reconnect() error {
 		}
 	}
 	log.Println("RabbitMQ Producer 正在重建连接...")
-	return p.connect()
+	return p.connect() // 这里的 connect() 会重新初始化 p.confirms
 }
 
 func (p *Producer) publish(body []byte, routingKey, bizNo string) error {
 	p.mu.Lock()
 	defer p.mu.Unlock()
-
-	confirms := p.channel.NotifyPublish(make(chan amqp.Confirmation, 1))
 
 	err := p.channel.Publish(
 		PaymentExchange,
@@ -175,7 +177,7 @@ func (p *Producer) publish(body []byte, routingKey, bizNo string) error {
 	}
 
 	select {
-	case confirmed := <-confirms:
+	case confirmed := <-p.confirms:
 		if confirmed.Ack {
 			log.Printf("消息已安全送达 MQ 磁盘! 订单号: %s\n", bizNo)
 			return nil

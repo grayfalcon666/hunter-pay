@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"sync"
 	"time"
 
 	"github.com/streadway/amqp"
@@ -12,12 +13,12 @@ import (
 
 const (
 	// 用户初始化相关配置
-	UserExchange       = "user_exchange"
-	UserCreatedQueue   = "user_created_queue"
-	UserProfileQueue   = "user_profile_queue"
-	UserAccountQueue   = "user_account_queue"
-	UserInitDLX        = "user_init_dlx"
-	UserInitDLQ        = "user_init_dlq"
+	UserExchange     = "user_exchange"
+	UserCreatedQueue = "user_created_queue"
+	UserProfileQueue = "user_profile_queue"
+	UserAccountQueue = "user_account_queue"
+	UserInitDLX      = "user_init_dlx"
+	UserInitDLQ      = "user_init_dlq"
 
 	UserCreatedRoutingKey = "user.created"
 	UserProfileRoutingKey = "user.profile.created"
@@ -25,8 +26,10 @@ const (
 )
 
 type UserProducer struct {
-	conn    *amqp.Connection
-	channel *amqp.Channel
+	conn     *amqp.Connection
+	channel  *amqp.Channel
+	confirms chan amqp.Confirmation // 全局唯一的确认通道
+	mu       sync.Mutex
 }
 
 func NewUserProducer(amqpURL string) (*UserProducer, error) {
@@ -102,10 +105,13 @@ func NewUserProducer(amqpURL string) (*UserProducer, error) {
 		return nil, fmt.Errorf("绑定 UserAccount Queue 失败：%w", err)
 	}
 
+	confirm := ch.NotifyPublish(make(chan amqp.Confirmation, 100))
+
 	log.Println("RabbitMQ 用户初始化生产者初始化成功")
 	return &UserProducer{
-		conn:    conn,
-		channel: ch,
+		conn:     conn,
+		channel:  ch,
+		confirms: confirm,
 	}, nil
 }
 
@@ -116,7 +122,8 @@ func (p *UserProducer) PublishUserCreatedEvent(ctx context.Context, event *UserC
 		return fmt.Errorf("序列化事件失败：%w", err)
 	}
 
-	confirms := p.channel.NotifyPublish(make(chan amqp.Confirmation, 1))
+	p.mu.Lock()
+	defer p.mu.Unlock()
 
 	err = p.channel.Publish(
 		UserExchange,
@@ -124,9 +131,9 @@ func (p *UserProducer) PublishUserCreatedEvent(ctx context.Context, event *UserC
 		true,
 		false,
 		amqp.Publishing{
-			ContentType:  "application/json",
-			Body:         body,
-			DeliveryMode: amqp.Persistent,
+			ContentType:   "application/json",
+			Body:          body,
+			DeliveryMode:  amqp.Persistent,
 			CorrelationId: event.RequestId, // 用于追踪
 		},
 	)
@@ -136,7 +143,7 @@ func (p *UserProducer) PublishUserCreatedEvent(ctx context.Context, event *UserC
 
 	// 等待 ACK
 	select {
-	case confirmed := <-confirms:
+	case confirmed := <-p.confirms:
 		if confirmed.Ack {
 			log.Printf("用户创建事件已发布：%s\n", event.Username)
 			return nil
@@ -156,7 +163,8 @@ func (p *UserProducer) PublishProfileCreatedEvent(ctx context.Context, event *Pr
 		return fmt.Errorf("序列化事件失败：%w", err)
 	}
 
-	confirms := p.channel.NotifyPublish(make(chan amqp.Confirmation, 1))
+	p.mu.Lock()
+	defer p.mu.Unlock()
 
 	routingKey := UserProfileRoutingKey
 	if !event.Success {
@@ -169,9 +177,9 @@ func (p *UserProducer) PublishProfileCreatedEvent(ctx context.Context, event *Pr
 		true,
 		false,
 		amqp.Publishing{
-			ContentType:  "application/json",
-			Body:         body,
-			DeliveryMode: amqp.Persistent,
+			ContentType:   "application/json",
+			Body:          body,
+			DeliveryMode:  amqp.Persistent,
 			CorrelationId: event.RequestId,
 		},
 	)
@@ -180,7 +188,7 @@ func (p *UserProducer) PublishProfileCreatedEvent(ctx context.Context, event *Pr
 	}
 
 	select {
-	case confirmed := <-confirms:
+	case confirmed := <-p.confirms:
 		if confirmed.Ack {
 			log.Printf("用户资料创建事件已发布：%s (success=%v)\n", event.Username, event.Success)
 			return nil
@@ -200,7 +208,8 @@ func (p *UserProducer) PublishAccountCreatedEvent(ctx context.Context, event *Ac
 		return fmt.Errorf("序列化事件失败：%w", err)
 	}
 
-	confirms := p.channel.NotifyPublish(make(chan amqp.Confirmation, 1))
+	p.mu.Lock()
+	defer p.mu.Unlock()
 
 	err = p.channel.Publish(
 		UserExchange,
@@ -208,9 +217,9 @@ func (p *UserProducer) PublishAccountCreatedEvent(ctx context.Context, event *Ac
 		true,
 		false,
 		amqp.Publishing{
-			ContentType:  "application/json",
-			Body:         body,
-			DeliveryMode: amqp.Persistent,
+			ContentType:   "application/json",
+			Body:          body,
+			DeliveryMode:  amqp.Persistent,
 			CorrelationId: event.RequestId,
 		},
 	)
@@ -219,7 +228,7 @@ func (p *UserProducer) PublishAccountCreatedEvent(ctx context.Context, event *Ac
 	}
 
 	select {
-	case confirmed := <-confirms:
+	case confirmed := <-p.confirms:
 		if confirmed.Ack {
 			log.Printf("账户创建事件已发布：%s (account_id=%d, success=%v)\n", event.Username, event.AccountId, event.Success)
 			return nil
