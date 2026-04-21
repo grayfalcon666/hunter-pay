@@ -59,9 +59,8 @@
           <div class="status-bar bar-hunter" />
           <q-card-section class="card-content">
             <div class="card-header">
-              <div class="hunter-avatar">
-                {{ (hunter.full_name || hunter.username || '?')[0].toUpperCase() }}
-              </div>
+              <img v-if="hunter.avatarUrl" :src="imageUrl(hunter.avatarUrl)" class="hunter-avatar" alt="avatar" />
+              <div v-else class="hunter-avatar">{{ (hunter.full_name || hunter.username || '?')[0].toUpperCase() }}</div>
               <div class="hunter-info">
                 <h3 class="hunter-name">{{ hunter.full_name || hunter.username }}</h3>
                 <span class="hunter-username">@{{ hunter.username }}</span>
@@ -100,9 +99,8 @@
     <q-dialog v-model="drawerOpen" position="right" full-height>
       <q-card class="hunter-drawer" v-if="selectedHunter">
         <q-card-section class="drawer-header">
-          <div class="drawer-avatar">
-            {{ (selectedHunter.full_name || selectedHunter.username || '?')[0].toUpperCase() }}
-          </div>
+          <img v-if="selectedHunter.avatarUrl" :src="imageUrl(selectedHunter.avatarUrl)" class="drawer-avatar" alt="avatar" />
+          <div v-else class="drawer-avatar">{{ (selectedHunter.full_name || selectedHunter.username || '?')[0].toUpperCase() }}</div>
           <div class="drawer-title">
             <h3>{{ selectedHunter.full_name || selectedHunter.username }}</h3>
             <span>@{{ selectedHunter.username }}</span>
@@ -223,6 +221,7 @@ import { useChatStore } from 'src/stores/chat'
 import { useBountyStore } from 'src/stores/bounty'
 import apiClient from 'src/api/client'
 import { createInvitation } from 'src/api/invitation'
+import { imageUrl } from 'src/api/upload'
 
 const $q = useQuasar()
 const router = useRouter()
@@ -488,6 +487,11 @@ onMounted(() => {
   color: var(--color-accent-teal);
   box-shadow: 0 0 12px var(--color-glow-teal);
   flex-shrink: 0;
+  object-fit: cover;
+}
+
+img.hunter-avatar {
+  display: block;
 }
 
 .hunter-info {
@@ -584,6 +588,11 @@ onMounted(() => {
   font-weight: 700;
   color: var(--color-accent-teal);
   flex-shrink: 0;
+  object-fit: cover;
+}
+
+img.drawer-avatar {
+  display: block;
 }
 
 .drawer-title {

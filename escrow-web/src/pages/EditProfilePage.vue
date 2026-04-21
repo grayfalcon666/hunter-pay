@@ -12,6 +12,20 @@
 
           <q-card-section>
             <q-form @submit.prevent="handleSubmit" class="edit-form">
+              <div class="avatar-row">
+                <ImageUploader
+                  v-model="form.avatar"
+                  entity-type="avatar"
+                  :entity-id="authStore.username"
+                  :max-files="1"
+                  class="avatar-uploader"
+                />
+                <div class="avatar-hint">
+                  <p>点击左侧上传头像</p>
+                  <p class="avatar-tip">支持 JPG/PNG/GIF/WEBP，建议 1:1 比例</p>
+                </div>
+              </div>
+
               <div class="form-field">
                 <label class="field-label">真实姓名</label>
                 <q-input
@@ -65,6 +79,7 @@ import { useRouter } from 'vue-router'
 import { useQuasar } from 'quasar'
 import { useProfileStore } from 'src/stores/profile'
 import { useAuthStore } from 'src/stores/auth'
+import ImageUploader from 'src/components/common/ImageUploader.vue'
 
 const router = useRouter()
 const $q = useQuasar()
@@ -72,6 +87,7 @@ const profileStore = useProfileStore()
 const authStore = useAuthStore()
 
 const form = ref({
+  avatar: [''],
   full_name: '',
   bio: '',
 })
@@ -82,6 +98,7 @@ onMounted(async () => {
   await profileStore.fetchProfile(authStore.username)
   const p = profileStore.profile
   if (p) {
+    form.value.avatar = [p.avatarUrl || p.avatar || '']
     form.value.full_name = p.full_name || ''
     form.value.bio = p.bio || ''
   }
@@ -93,6 +110,7 @@ async function handleSubmit() {
     await profileStore.updateProfile(authStore.username, {
       full_name: form.value.full_name,
       bio: form.value.bio,
+      avatarUrl: form.value.avatar[0] || '',
     })
     $q.notify({ type: 'positive', message: '资料更新成功' })
     router.push(`/profile/${authStore.username}`)
@@ -149,6 +167,27 @@ function handleCancel() {
   display: flex;
   flex-direction: column;
   gap: 24px;
+}
+
+.avatar-row {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 16px;
+  background: var(--color-bg-elevated);
+  border-radius: 8px;
+}
+
+.avatar-hint {
+  p {
+    margin: 0 0 4px;
+    font-size: 0.9rem;
+    color: var(--color-text-primary);
+  }
+  .avatar-tip {
+    font-size: 0.78rem;
+    color: var(--color-text-muted);
+  }
 }
 
 .form-field {

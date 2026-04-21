@@ -1059,12 +1059,17 @@ type Comment struct {
 	state                protoimpl.MessageState `protogen:"open.v1"`
 	Id                   int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
 	BountyId             int64                  `protobuf:"varint,2,opt,name=bounty_id,json=bountyId,proto3" json:"bounty_id,omitempty"`
-	ParentId             int64                  `protobuf:"varint,3,opt,name=parent_id,json=parentId,proto3" json:"parent_id,omitempty"`
-	AuthorUsername       string                 `protobuf:"bytes,4,opt,name=author_username,json=authorUsername,proto3" json:"author_username,omitempty"`
-	Content              string                 `protobuf:"bytes,5,opt,name=content,proto3" json:"content,omitempty"`
-	CreatedAt            int64                  `protobuf:"varint,6,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	Replies              []*Comment             `protobuf:"bytes,7,rep,name=replies,proto3" json:"replies,omitempty"`
-	ParentAuthorUsername string                 `protobuf:"bytes,8,opt,name=parent_author_username,json=parentAuthorUsername,proto3" json:"parent_author_username,omitempty"` // for reply quotes
+	ParentId             int64                  `protobuf:"varint,3,opt,name=parent_id,json=parentId,proto3" json:"parent_id,omitempty"`      // 指向根评论，0/NULL 表示自己是根评论
+	ReplyToId            int64                  `protobuf:"varint,4,opt,name=reply_to_id,json=replyToId,proto3" json:"reply_to_id,omitempty"` // 指向被回复的具体评论，0/NULL 表示直接回复父亲
+	AuthorUsername       string                 `protobuf:"bytes,5,opt,name=author_username,json=authorUsername,proto3" json:"author_username,omitempty"`
+	Content              string                 `protobuf:"bytes,6,opt,name=content,proto3" json:"content,omitempty"`
+	CreatedAt            int64                  `protobuf:"varint,7,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	Replies              []*Comment             `protobuf:"bytes,8,rep,name=replies,proto3" json:"replies,omitempty"`                                                         // deprecated: 前端按 parent_id 手动组织
+	ParentAuthorUsername string                 `protobuf:"bytes,9,opt,name=parent_author_username,json=parentAuthorUsername,proto3" json:"parent_author_username,omitempty"` // for reply quotes (实际是 reply_to 的作者)
+	ImagePath            string                 `protobuf:"bytes,10,opt,name=image_path,json=imagePath,proto3" json:"image_path,omitempty"`                                   // 评论图片路径
+	AuthorAvatarUrl      string                 `protobuf:"bytes,11,opt,name=author_avatar_url,json=authorAvatarUrl,proto3" json:"author_avatar_url,omitempty"`               // 作者头像 URL
+	ReplyToUsername      string                 `protobuf:"bytes,12,opt,name=reply_to_username,json=replyToUsername,proto3" json:"reply_to_username,omitempty"`               // 被回复评论的作者名（用于引用框显示）
+	ReplyToContent       string                 `protobuf:"bytes,13,opt,name=reply_to_content,json=replyToContent,proto3" json:"reply_to_content,omitempty"`                  // 被回复评论的内容（用于引用框显示）
 	unknownFields        protoimpl.UnknownFields
 	sizeCache            protoimpl.SizeCache
 }
@@ -1120,6 +1125,13 @@ func (x *Comment) GetParentId() int64 {
 	return 0
 }
 
+func (x *Comment) GetReplyToId() int64 {
+	if x != nil {
+		return x.ReplyToId
+	}
+	return 0
+}
+
 func (x *Comment) GetAuthorUsername() string {
 	if x != nil {
 		return x.AuthorUsername
@@ -1151,6 +1163,34 @@ func (x *Comment) GetReplies() []*Comment {
 func (x *Comment) GetParentAuthorUsername() string {
 	if x != nil {
 		return x.ParentAuthorUsername
+	}
+	return ""
+}
+
+func (x *Comment) GetImagePath() string {
+	if x != nil {
+		return x.ImagePath
+	}
+	return ""
+}
+
+func (x *Comment) GetAuthorAvatarUrl() string {
+	if x != nil {
+		return x.AuthorAvatarUrl
+	}
+	return ""
+}
+
+func (x *Comment) GetReplyToUsername() string {
+	if x != nil {
+		return x.ReplyToUsername
+	}
+	return ""
+}
+
+func (x *Comment) GetReplyToContent() string {
+	if x != nil {
+		return x.ReplyToContent
 	}
 	return ""
 }
@@ -1201,7 +1241,7 @@ func (x *ListCommentsRequest) GetBountyId() int64 {
 
 type ListCommentsResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Comments      []*Comment             `protobuf:"bytes,1,rep,name=comments,proto3" json:"comments,omitempty"`
+	Comments      []*Comment             `protobuf:"bytes,1,rep,name=comments,proto3" json:"comments,omitempty"` // 只返回根评论（parent_id = 0/NULL），前端按 parent_id 拉子评论
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1246,8 +1286,9 @@ func (x *ListCommentsResponse) GetComments() []*Comment {
 type CreateCommentRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	BountyId      int64                  `protobuf:"varint,1,opt,name=bounty_id,json=bountyId,proto3" json:"bounty_id,omitempty"`
-	ParentId      int64                  `protobuf:"varint,2,opt,name=parent_id,json=parentId,proto3" json:"parent_id,omitempty"`
+	ReplyToId     int64                  `protobuf:"varint,2,opt,name=reply_to_id,json=replyToId,proto3" json:"reply_to_id,omitempty"` // 被回复的评论ID，0 表示发布根评论
 	Content       string                 `protobuf:"bytes,3,opt,name=content,proto3" json:"content,omitempty"`
+	ImageId       int64                  `protobuf:"varint,4,opt,name=image_id,json=imageId,proto3" json:"image_id,omitempty"` // 上传后的图片 ID
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1289,9 +1330,9 @@ func (x *CreateCommentRequest) GetBountyId() int64 {
 	return 0
 }
 
-func (x *CreateCommentRequest) GetParentId() int64 {
+func (x *CreateCommentRequest) GetReplyToId() int64 {
 	if x != nil {
-		return x.ParentId
+		return x.ReplyToId
 	}
 	return 0
 }
@@ -1301,6 +1342,13 @@ func (x *CreateCommentRequest) GetContent() string {
 		return x.Content
 	}
 	return ""
+}
+
+func (x *CreateCommentRequest) GetImageId() int64 {
+	if x != nil {
+		return x.ImageId
+	}
+	return 0
 }
 
 type CreateCommentResponse struct {
@@ -1602,25 +1650,33 @@ const file_chat_proto_rawDesc = "" +
 	"\x05total\x18\x02 \x01(\x03R\x05total\x1a9\n" +
 	"\vCountsEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\x03R\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\x05R\x05value:\x028\x01\"\x92\x02\n" +
+	"\x05value\x18\x02 \x01(\x05R\x05value:\x028\x01\"\xd3\x03\n" +
 	"\aComment\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x1b\n" +
 	"\tbounty_id\x18\x02 \x01(\x03R\bbountyId\x12\x1b\n" +
-	"\tparent_id\x18\x03 \x01(\x03R\bparentId\x12'\n" +
-	"\x0fauthor_username\x18\x04 \x01(\tR\x0eauthorUsername\x12\x18\n" +
-	"\acontent\x18\x05 \x01(\tR\acontent\x12\x1d\n" +
+	"\tparent_id\x18\x03 \x01(\x03R\bparentId\x12\x1e\n" +
+	"\vreply_to_id\x18\x04 \x01(\x03R\treplyToId\x12'\n" +
+	"\x0fauthor_username\x18\x05 \x01(\tR\x0eauthorUsername\x12\x18\n" +
+	"\acontent\x18\x06 \x01(\tR\acontent\x12\x1d\n" +
 	"\n" +
-	"created_at\x18\x06 \x01(\x03R\tcreatedAt\x12%\n" +
-	"\areplies\x18\a \x03(\v2\v.pb.CommentR\areplies\x124\n" +
-	"\x16parent_author_username\x18\b \x01(\tR\x14parentAuthorUsername\"2\n" +
+	"created_at\x18\a \x01(\x03R\tcreatedAt\x12%\n" +
+	"\areplies\x18\b \x03(\v2\v.pb.CommentR\areplies\x124\n" +
+	"\x16parent_author_username\x18\t \x01(\tR\x14parentAuthorUsername\x12\x1d\n" +
+	"\n" +
+	"image_path\x18\n" +
+	" \x01(\tR\timagePath\x12*\n" +
+	"\x11author_avatar_url\x18\v \x01(\tR\x0fauthorAvatarUrl\x12*\n" +
+	"\x11reply_to_username\x18\f \x01(\tR\x0freplyToUsername\x12(\n" +
+	"\x10reply_to_content\x18\r \x01(\tR\x0ereplyToContent\"2\n" +
 	"\x13ListCommentsRequest\x12\x1b\n" +
 	"\tbounty_id\x18\x01 \x01(\x03R\bbountyId\"?\n" +
 	"\x14ListCommentsResponse\x12'\n" +
-	"\bcomments\x18\x01 \x03(\v2\v.pb.CommentR\bcomments\"j\n" +
+	"\bcomments\x18\x01 \x03(\v2\v.pb.CommentR\bcomments\"\x88\x01\n" +
 	"\x14CreateCommentRequest\x12\x1b\n" +
-	"\tbounty_id\x18\x01 \x01(\x03R\bbountyId\x12\x1b\n" +
-	"\tparent_id\x18\x02 \x01(\x03R\bparentId\x12\x18\n" +
-	"\acontent\x18\x03 \x01(\tR\acontent\">\n" +
+	"\tbounty_id\x18\x01 \x01(\x03R\bbountyId\x12\x1e\n" +
+	"\vreply_to_id\x18\x02 \x01(\x03R\treplyToId\x12\x18\n" +
+	"\acontent\x18\x03 \x01(\tR\acontent\x12\x19\n" +
+	"\bimage_id\x18\x04 \x01(\x03R\aimageId\">\n" +
 	"\x15CreateCommentResponse\x12%\n" +
 	"\acomment\x18\x01 \x01(\v2\v.pb.CommentR\acomment\"5\n" +
 	"\x14DeleteCommentRequest\x12\x1d\n" +

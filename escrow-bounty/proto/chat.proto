@@ -116,12 +116,17 @@ message GetUnreadCountsResponse {
 message Comment {
     int64 id = 1;
     int64 bounty_id = 2;
-    int64 parent_id = 3;
-    string author_username = 4;
-    string content = 5;
-    int64 created_at = 6;
-    repeated Comment replies = 7;
-    string parent_author_username = 8; // for reply quotes
+    int64 parent_id = 3;       // 指向根评论，0/NULL 表示自己是根评论
+    int64 reply_to_id = 4;    // 指向被回复的具体评论，0/NULL 表示直接回复父亲
+    string author_username = 5;
+    string content = 6;
+    int64 created_at = 7;
+    repeated Comment replies = 8;                  // deprecated: 前端按 parent_id 手动组织
+    string parent_author_username = 9; // for reply quotes (实际是 reply_to 的作者)
+    string image_path = 10;     // 评论图片路径
+    string author_avatar_url = 11; // 作者头像 URL
+    string reply_to_username = 12; // 被回复评论的作者名（用于引用框显示）
+    string reply_to_content = 13; // 被回复评论的内容（用于引用框显示）
 }
 
 message ListCommentsRequest {
@@ -129,13 +134,14 @@ message ListCommentsRequest {
 }
 
 message ListCommentsResponse {
-    repeated Comment comments = 1;
+    repeated Comment comments = 1; // 只返回根评论（parent_id = 0/NULL），前端按 parent_id 拉子评论
 }
 
 message CreateCommentRequest {
     int64 bounty_id = 1;
-    int64 parent_id = 2;
+    int64 reply_to_id = 2;   // 被回复的评论ID，0 表示发布根评论
     string content = 3;
+    int64 image_id = 4;       // 上传后的图片 ID
 }
 
 message CreateCommentResponse {

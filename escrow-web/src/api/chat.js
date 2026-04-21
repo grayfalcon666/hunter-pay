@@ -34,11 +34,14 @@ export async function listComments(bountyId) {
   return apiClient.get(`/bounties/${bountyId}/comments`)
 }
 
-export async function createComment(bountyId, { parentId, content }) {
-  return apiClient.post(`/bounties/${bountyId}/comments`, {
-    parent_id: parentId || 0,
+export async function createComment(bountyId, { replyToId, content, imageId }) {
+  const body = {
+    reply_to_id: replyToId || 0,
     content,
-  })
+  }
+  if (imageId) body.image_id = imageId
+  console.log('[chat.createComment] POST /bounties/' + bountyId + '/comments, body:', JSON.stringify(body))
+  return apiClient.post(`/bounties/${bountyId}/comments`, body)
 }
 
 export async function deleteComment(commentId) {

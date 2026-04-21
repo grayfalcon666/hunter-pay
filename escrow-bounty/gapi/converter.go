@@ -1,6 +1,8 @@
 package gapi
 
 import (
+	"context"
+
 	"github.com/grayfalcon666/escrow-bounty/models"
 	"github.com/grayfalcon666/escrow-bounty/pb"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -103,22 +105,28 @@ func convertConversationSummary(conv *models.PrivateConversation, lastMsg *model
 	}
 }
 
-func convertComment(c *models.Comment, parentAuthorUsername string) *pb.Comment {
+func convertComment(ctx context.Context, server *Server, c *models.Comment, replyToAuthorUsername string) *pb.Comment {
 	pbComment := &pb.Comment{
 		Id:                   c.ID,
 		BountyId:             c.BountyID,
 		ParentId:             0,
+		ReplyToId:            0,
 		AuthorUsername:        c.AuthorUsername,
 		Content:              c.Content,
 		CreatedAt:            c.CreatedAt.Unix(),
-		ParentAuthorUsername: parentAuthorUsername,
+		ParentAuthorUsername: replyToAuthorUsername,
+		AuthorAvatarUrl:      c.AuthorAvatarURL,
 	}
 	if c.ParentID != nil {
 		pbComment.ParentId = *c.ParentID
 	}
-	for _, reply := range c.Replies {
-		converted := convertComment(&reply, c.AuthorUsername)
-		pbComment.Replies = append(pbComment.Replies, converted)
+	if c.ReplyToID != nil {
+		pbComment.ReplyToId = *c.ReplyToID
+	}
+	if c.ImageID != nil {
+		if img, err := server.store.GetImage(ctx, *c.ImageID); err == nil {
+			pbComment.ImagePath = img.RelativePath
+		}
 	}
 	return pbComment
 }

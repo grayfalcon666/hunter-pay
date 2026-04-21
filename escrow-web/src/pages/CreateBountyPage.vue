@@ -36,6 +36,21 @@
               <template #prepend><q-icon name="description" color="grey-6" /></template>
             </q-input>
 
+            <div class="images-section">
+              <div class="section-label">
+                <q-icon name="image" color="amber" />
+                <span>描述图片（可选，最多 9 张）</span>
+              </div>
+              <ImageUploader
+                v-model="form.images"
+                entity-type="bounty"
+                :entity-id="0"
+                :max-files="9"
+                v-model:uploading="isUploading"
+                @upload-success="img => uploadedImages.value.push(img)"
+              />
+            </div>
+
             <div class="amount-section">
               <div class="section-label">
                 <q-icon name="payments" color="amber" />
@@ -106,7 +121,7 @@
                 color="primary"
                 label="发布悬赏"
                 :loading="loading"
-                :disable="!canSubmit"
+                :disable="!canSubmit || isUploading"
                 class="submit-btn"
               />
             </div>
@@ -123,12 +138,15 @@ import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useQuasar } from 'quasar'
 import { useBountyStore } from 'src/stores/bounty'
+import ImageUploader from 'src/components/common/ImageUploader.vue'
 
 const bountyStore = useBountyStore()
 const router = useRouter()
 const $q = useQuasar()
 
-const form = ref({ title: '', description: '', amountYuan: 100, deadlineDate: '', deadlineTime: '' })
+const form = ref({ title: '', description: '', amountYuan: 100, deadlineDate: '', deadlineTime: '', images: [] })
+const uploadedImages = ref([])
+const isUploading = ref(false)
 const loading = ref(false)
 
 // 截止时间是否有效（必须大于当前时间）
@@ -153,7 +171,12 @@ async function handleCreate() {
   loading.value = true
   try {
     const amountCents = Math.round(form.value.amountYuan * 100)
-    const payload = { title: form.value.title, description: form.value.description, reward_amount: amountCents }
+    const payload = {
+      title: form.value.title,
+      description: form.value.description,
+      reward_amount: amountCents,
+      image_ids: uploadedImages.value.map(img => img.id),
+    }
     // Add deadline if set
     if (form.value.deadlineDate && form.value.deadlineTime) {
       const deadlineTs = Math.floor(new Date(`${form.value.deadlineDate}T${form.value.deadlineTime}:00`).getTime() / 1000)
@@ -181,6 +204,14 @@ async function handleCreate() {
   background: var(--color-bg-secondary) !important;
   border: 1px solid var(--color-border) !important;
   border-radius: var(--radius-card) !important;
+}
+
+.images-section {
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  padding: 16px;
+  margin-bottom: 24px;
 }
 
 .amount-section {

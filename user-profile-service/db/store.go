@@ -14,6 +14,7 @@ import (
 type Store interface {
 	CreateProfile(ctx context.Context, username string, req *models.CreateProfileParams) (*models.UserProfile, error)
 	GetProfile(ctx context.Context, username string) (*models.UserProfile, error)
+	GetAvatarUrlsByUsernames(ctx context.Context, usernames []string) (map[string]string, error)
 	UpdateProfile(ctx context.Context, username string, req *models.UpdateProfileParams) (*models.UserProfile, error)
 	UpdateRole(ctx context.Context, username string, role string) (*models.UserProfile, error)
 	RefreshStats(ctx context.Context, username string, req *models.RefreshStatsParams) (*models.UserProfile, error)
@@ -92,6 +93,30 @@ func (store *SQLStore) GetProfile(ctx context.Context, username string) (*models
 		profile.CoolingLambda,
 	)
 	return &profile, nil
+}
+
+func (store *SQLStore) GetAvatarUrlsByUsernames(ctx context.Context, usernames []string) (map[string]string, error) {
+	if len(usernames) == 0 {
+		return map[string]string{}, nil
+	}
+	type result struct {
+		Username  string
+		AvatarURL string
+	}
+	var results []result
+	err := store.db.WithContext(ctx).
+		Model(&models.UserProfile{}).
+		Select("username, COALESCE(avatar_url, '') AS avatar_url").
+		Where("username IN ?", usernames).
+		Scan(&results).Error
+	if err != nil {
+		return nil, err
+	}
+	m := make(map[string]string, len(results))
+	for _, r := range results {
+		m[r.Username] = r.AvatarURL
+	}
+	return m, nil
 }
 
 // CalculateDecayedReputationScore applies Newton's cooling law decay to a user's reputation.

@@ -12,6 +12,7 @@ export const useBountyStore = defineStore('bounty', () => {
 
   // Comments
   const comments = ref([])
+  const commentsFlat = ref([]) // 完整扁平列表（含根评论和回复），用于 replyToId 查找
   const commentsLoading = ref(false)
 
   // 悬赏列表
@@ -38,14 +39,18 @@ export const useBountyStore = defineStore('bounty', () => {
     loading.value = true
     error.value = null
     try {
+      console.log('[bountyStore] fetching bounty:', id)
       const data = await apiClient.get(`/bounties/${id}`)
+      console.log('[bountyStore] raw response:', JSON.stringify(data))
       const bounty = data.bounty || data
       // Attach applications to bounty object (API returns {bounty, applications} separately)
       if (data.applications) {
         bounty.applications = data.applications
       }
+      console.log('[bountyStore] parsed bounty:', JSON.stringify(bounty))
       currentBounty.value = bounty
     } catch (e) {
+      console.error('[bountyStore] fetchBounty error:', e)
       error.value = e.message
     } finally {
       loading.value = false
@@ -123,45 +128,102 @@ export const useBountyStore = defineStore('bounty', () => {
   async function fetchComments(bountyId) {
     commentsLoading.value = true
     try {
+      console.log('[bountyStore] fetching comments for bounty:', bountyId)
       const data = await apiClient.get(`/bounties/${bountyId}/comments`)
-      comments.value = data.comments || []
+      console.log('[bountyStore] comments raw response:', JSON.stringify(data))
+      // 后端返回扁平列表：根评论（parentId=null）包含 replyToId
+      // 前端按 parentId 手动构建 replies 树
+      const allComments = data.comments || []
+      // 构建 id -> 评论的映射，用于查找 reply_to 作者
+      const idMap = {}
+      allComments.forEach(c => { idMap[Number(c.id)] = c })
+      // 给每个评论补上 replyToUsername（显示"回复 @xxx"）
+      allComments.forEach(c => {
+        const replyToId = c.replyToId != null ? Number(c.replyToId) : null
+        if (replyToId && idMap[replyToId]) {
+          c.replyToUsername = idMap[replyToId].authorUsername
+        }
+      })
+      // 构建 replies 树：parentId == null 或 "0" 才是父亲评论
+      allComments.forEach(c => { c.replies = [] })
+      allComments.forEach(c => {
+        const parentId = c.parentId != null ? Number(c.parentId) : null
+        // parentId 为 0 或 null 表示根评论，跳过
+        if (parentId != null && parentId !== 0 && idMap[parentId]) {
+          idMap[parentId].replies.push(c)
+        }
+      })
+      // 根评论：parentId 为 null 或 "0" 或 0
+      comments.value = allComments.filter(c => c.parentId == null || c.parentId === '0' || c.parentId === 0)
+      // 保存完整扁平列表
+      commentsFlat.value = allComments
+      console.log('[bountyStore] fetchComments final root comments:', JSON.stringify(comments.value))
+      console.log('[bountyStore] fetchComments all comments with replies:', JSON.stringify(allComments.map(c => ({ id: c.id, parentId: c.parentId, replyToId: c.replyToId, content: c.content, replies: c.replies?.length }))))
     } catch (e) {
-      console.error('fetchComments error:', e)
+      console.error('[bountyStore] fetchComments error:', e)
     } finally {
       commentsLoading.value = false
     }
   }
 
-  async function addComment(bountyId, { parentId, content }) {
-    const data = await apiClient.post(`/bounties/${bountyId}/comments`, {
-      parent_id: parentId || 0,
+  async function addComment(bountyId, { parent_id, reply_to_id, content, imageId }) {
+    const body = {
+      parent_id: parent_id ?? 0,
+      reply_to_id: reply_to_id ?? 0,
       content,
-    })
-    if (parentId) {
-      // Find parent comment and push to its replies
-      const parent = comments.value.find(c => c.id === parentId)
-      if (parent) {
-        if (!parent.replies) parent.replies = []
-        parent.replies = [...parent.replies, data.comment]
-      }
-    } else {
-      comments.value = [...comments.value, data.comment]
+      image_id: imageId ?? 0,
     }
-    return data.comment
+    console.log('[bountyStore] addComment called, bountyId:', bountyId)
+    console.log('[bountyStore] addComment received params:', { parent_id, reply_to_id, content, imageId })
+    console.log('[bountyStore] addComment body to send:', JSON.stringify(body))
+    const data = await apiClient.post(`/bounties/${bountyId}/comments`, body)
+    console.log('[bountyStore] addComment response:', JSON.stringify(data))
+    const newComment = data.comment
+    // 统一转为 number 避免类型比较问题
+    const parentIdNum = newComment.parentId != null ? Number(newComment.parentId) : null
+    const replyToIdNum = newComment.replyToId != null ? Number(newComment.replyToId) : null
+    // 补上 replyToUsername（reply_to_id 决定下方引用谁）
+    if (replyToIdNum && comments.value) {
+      const allComments = []
+      comments.value.forEach(c => {
+        allComments.push(c)
+        if (c.replies) c.replies.forEach(r => allComments.push(r))
+      })
+      const idMap = {}
+      allComments.forEach(c => { idMap[Number(c.id)] = c })
+      if (idMap[replyToIdNum]) {
+        newComment.replyToUsername = idMap[replyToIdNum].authorUsername
+      }
+    }
+    // parent_id == null 或 0 才是父亲评论，挂在根评论列表
+    if (parentIdNum == null || parentIdNum === 0) {
+      comments.value = [...comments.value, newComment]
+    } else {
+      // 挂到对应的根评论下
+      const root = comments.value.find(c => Number(c.id) === parentIdNum)
+      if (root) {
+        root.replies = [...(root.replies || []), newComment]
+        console.log('[bountyStore] addComment appended to root replies, root id:', root.id, 'replies count:', root.replies.length)
+      } else {
+        console.log('[bountyStore] addComment ERROR: root not found for parentId:', parentIdNum)
+      }
+    }
+    // 新评论加入扁平列表
+    commentsFlat.value.push(newComment)
+    console.log('[bountyStore] addComment final root comments:', JSON.stringify(comments.value.map(c => ({ id: c.id, parentId: c.parentId, replies: c.replies?.length }))))
+    return newComment
   }
 
   async function removeComment(commentId) {
     await apiClient.delete(`/comments/${commentId}`)
-    // Recursively remove comment and its replies from nested structure
-    function removeFromTree(list) {
-      return list.filter(c => {
-        if (c.id === commentId) return false
-        if (c.parent_id === commentId) return false
-        if (c.replies) c.replies = removeFromTree(c.replies)
-        return true
-      })
-    }
-    comments.value = removeFromTree(comments.value)
+    // 从根评论列表及其 replies 中删除
+    const cid = Number(commentId)
+    comments.value = comments.value
+      .filter(c => Number(c.id) !== cid)
+      .map(c => ({
+        ...c,
+        replies: (c.replies || []).filter(r => Number(r.id) !== cid),
+      }))
   }
 
   // 提交互评
@@ -193,6 +255,7 @@ export const useBountyStore = defineStore('bounty', () => {
     loading,
     error,
     comments,
+    commentsFlat,
     commentsLoading,
     fetchBounties,
     fetchBounty,

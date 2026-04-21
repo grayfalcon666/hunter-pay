@@ -54,6 +54,7 @@
               <q-route-tab to="/" exact label="悬赏大厅" />
               <q-route-tab v-if="authStore.isLoggedIn()" to="/my-tasks" label="我的任务" />
             </template>
+            <q-route-tab v-if="authStore.isLoggedIn()" to="/my/comments" label="我的评论" />
             <q-route-tab v-if="authStore.isLoggedIn()" to="/wallet" label="钱包" />
           </q-tabs>
         </div>

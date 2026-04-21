@@ -3,8 +3,11 @@ package gapi
 import (
 	"context"
 	"errors"
+	"os"
+	"path/filepath"
 	"strings"
 
+	"github.com/grayfalcon666/escrow-bounty/models"
 	"github.com/grayfalcon666/escrow-bounty/pb"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -27,16 +30,47 @@ func (server *Server) ListComments(ctx context.Context, req *pb.ListCommentsRequ
 		return nil, status.Errorf(codes.Internal, "查询评论失败: %v", err)
 	}
 
-	// Build tree: only top-level comments (parent_id is null)
-	var topLevel []*pb.Comment
+	// 收集所有评论作者，去重
+	usernameSet := make(map[string]struct{})
 	for _, c := range comments {
-		if c.ParentID == nil {
-			topLevel = append(topLevel, convertComment(&c, ""))
+		usernameSet[c.AuthorUsername] = struct{}{}
+	}
+	usernames := make([]string, 0, len(usernameSet))
+	for u := range usernameSet {
+		usernames = append(usernames, u)
+	}
+
+	// 批量查头像
+	avatarMap, _ := server.store.GetAvatarUrlsByUsernames(ctx, usernames)
+
+	// 建立 id -> comment 的映射，用于查找 reply_to 的内容和作者
+	idToComment := make(map[int64]*models.Comment)
+	for i := range comments {
+		idToComment[comments[i].ID] = &comments[i]
+	}
+
+	// 返回该 bounty 的所有评论（扁平列表）
+	var pbComments []*pb.Comment
+	for _, c := range comments {
+		replyToAuthor := ""
+		replyToUsername := ""
+		replyToContent := ""
+		if c.ReplyToID != nil {
+			if ref := idToComment[*c.ReplyToID]; ref != nil {
+				replyToAuthor = ref.AuthorUsername
+				replyToUsername = ref.AuthorUsername
+				replyToContent = ref.Content
+			}
 		}
+		pbComment := convertComment(ctx, server, &c, replyToAuthor)
+		pbComment.AuthorAvatarUrl = avatarMap[c.AuthorUsername]
+		pbComment.ReplyToUsername = replyToUsername
+		pbComment.ReplyToContent = replyToContent
+		pbComments = append(pbComments, pbComment)
 	}
 
 	return &pb.ListCommentsResponse{
-		Comments: topLevel,
+		Comments: pbComments,
 	}, nil
 }
 
@@ -60,12 +94,19 @@ func (server *Server) CreateComment(ctx context.Context, req *pb.CreateCommentRe
 		return nil, status.Errorf(codes.InvalidArgument, "评论内容不能超过 2000 字符")
 	}
 
-	var parentID *int64
-	if req.GetParentId() > 0 {
-		parentID = &req.ParentId
+	// reply_to_id: 被回复的评论ID，0 表示发布根评论
+	var replyToID *int64
+	if req.GetReplyToId() > 0 {
+		replyToID = &req.ReplyToId
 	}
 
-	comment, err := server.store.CreateComment(ctx, bountyID, parentID, author, content)
+	// image_id: 评论图片
+	var imageID *int64
+	if req.GetImageId() > 0 {
+		imageID = &req.ImageId
+	}
+
+	comment, err := server.store.CreateComment(ctx, bountyID, replyToID, author, content, imageID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, status.Errorf(codes.NotFound, "悬赏或回复的评论不存在")
@@ -76,8 +117,25 @@ func (server *Server) CreateComment(ctx context.Context, req *pb.CreateCommentRe
 		return nil, status.Errorf(codes.Internal, "创建评论失败: %v", err)
 	}
 
+	// 填充被回复评论的作者名
+	replyToAuthor := ""
+	replyToUsername := ""
+	replyToContent := ""
+	if replyToID != nil {
+		replyTo, err := server.store.GetComment(ctx, *replyToID)
+		if err == nil {
+			replyToAuthor = replyTo.AuthorUsername
+			replyToUsername = replyTo.AuthorUsername
+			replyToContent = replyTo.Content
+		}
+	}
+
+	pbComment := convertComment(ctx, server, comment, replyToAuthor)
+	pbComment.ReplyToUsername = replyToUsername
+	pbComment.ReplyToContent = replyToContent
+
 	return &pb.CreateCommentResponse{
-		Comment: convertComment(comment, ""),
+		Comment: pbComment,
 	}, nil
 }
 
@@ -93,7 +151,9 @@ func (server *Server) DeleteComment(ctx context.Context, req *pb.DeleteCommentRe
 		return nil, status.Errorf(codes.InvalidArgument, "无效的评论 ID")
 	}
 
-	if err := server.store.DeleteComment(ctx, commentID, caller); err != nil {
+	// DB事务删除评论+子评论+图片记录，返回被删图片路径
+	deletedPaths, err := server.store.DeleteCommentCascade(ctx, commentID, caller)
+	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, status.Errorf(codes.NotFound, "评论不存在")
 		}
@@ -101,6 +161,12 @@ func (server *Server) DeleteComment(ctx context.Context, req *pb.DeleteCommentRe
 			return nil, status.Errorf(codes.PermissionDenied, "只能删除自己的评论")
 		}
 		return nil, status.Errorf(codes.Internal, "删除评论失败: %v", err)
+	}
+
+	// 业务层：清理物理图片文件
+	for _, path := range deletedPaths {
+		fullPath := filepath.Join(uploadBasePath, path)
+		os.Remove(fullPath)
 	}
 
 	return &pb.DeleteCommentResponse{}, nil
@@ -131,9 +197,42 @@ func (server *Server) ListUserComments(ctx context.Context, req *pb.ListUserComm
 		return nil, status.Errorf(codes.Internal, "查询用户评论失败: %v", err)
 	}
 
+	// 收集所有评论作者，去重查头像
+	usernameSet := make(map[string]struct{})
+	for _, c := range comments {
+		usernameSet[c.AuthorUsername] = struct{}{}
+	}
+	usernames := make([]string, 0, len(usernameSet))
+	for u := range usernameSet {
+		usernames = append(usernames, u)
+	}
+	avatarMap, _ := server.store.GetAvatarUrlsByUsernames(ctx, usernames)
+
+	// 建立 id -> comment 映射，查找 replyToUsername 和 replyToContent
+	idToComment := make(map[int64]*models.Comment)
+	for i := range comments {
+		idToComment[comments[i].ID] = &comments[i]
+	}
+
 	var pbComments []*pb.Comment
 	for _, c := range comments {
-		pbComments = append(pbComments, convertComment(&c, ""))
+		replyToAuthor := ""
+		replyToUsername := ""
+		replyToContent := ""
+		if c.ReplyToID != nil {
+			if replyTo, err := server.store.GetComment(ctx, *c.ReplyToID); err == nil {
+				replyToAuthor = replyTo.AuthorUsername
+			}
+			if ref := idToComment[*c.ReplyToID]; ref != nil {
+				replyToUsername = ref.AuthorUsername
+				replyToContent = ref.Content
+			}
+		}
+		pbComment := convertComment(ctx, server, &c, replyToAuthor)
+		pbComment.AuthorAvatarUrl = avatarMap[c.AuthorUsername]
+		pbComment.ReplyToUsername = replyToUsername
+		pbComment.ReplyToContent = replyToContent
+		pbComments = append(pbComments, pbComment)
 	}
 
 	return &pb.ListUserCommentsResponse{

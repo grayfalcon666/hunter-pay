@@ -21,9 +21,8 @@
               <q-card v-for="review in hunterReviews" :key="review.id" class="review-card">
                 <q-card-section>
                   <div class="review-header">
-                    <div class="reviewer-avatar">
-                      {{ (review.reviewerUsername || '?')[0].toUpperCase() }}
-                    </div>
+                    <img v-if="review.reviewerAvatarUrl" :src="imageUrl(review.reviewerAvatarUrl)" class="reviewer-avatar" alt="avatar" />
+                    <div v-else class="reviewer-avatar">{{ (review.reviewerUsername || '?')[0].toUpperCase() }}</div>
                     <div class="reviewer-info">
                       <router-link :to="`/profile/${review.reviewerUsername}`" class="reviewer-name">
                         {{ review.reviewerUsername }}
@@ -49,9 +48,8 @@
               <q-card v-for="review in employerReviews" :key="review.id" class="review-card">
                 <q-card-section>
                   <div class="review-header">
-                    <div class="reviewer-avatar">
-                      {{ (review.reviewerUsername || '?')[0].toUpperCase() }}
-                    </div>
+                    <img v-if="review.reviewerAvatarUrl" :src="imageUrl(review.reviewerAvatarUrl)" class="reviewer-avatar" alt="avatar" />
+                    <div v-else class="reviewer-avatar">{{ (review.reviewerUsername || '?')[0].toUpperCase() }}</div>
                     <div class="reviewer-info">
                       <router-link :to="`/profile/${review.reviewerUsername}`" class="reviewer-name">
                         {{ review.reviewerUsername }}
@@ -81,6 +79,7 @@
 import { computed, onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { useProfileStore } from 'src/stores/profile'
+import { imageUrl } from 'src/api/upload'
 
 const route = useRoute()
 const profileStore = useProfileStore()
@@ -146,6 +145,11 @@ onMounted(() => profileStore.fetchReviews(username.value))
   font-family: var(--font-display); font-size: 0.9rem; font-weight: 600;
   color: var(--color-accent-gold);
   flex-shrink: 0;
+  object-fit: cover;
+}
+
+img.reviewer-avatar {
+  display: block;
 }
 
 .reviewer-name { font-size: 0.9rem; font-weight: 600; text-decoration: none; color: var(--color-text-primary); &:hover { color: var(--color-accent-teal); } }

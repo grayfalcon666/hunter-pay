@@ -21,7 +21,8 @@
       <!-- 底部信息 -->
       <div class="card-footer">
         <div class="employer-info">
-          <div class="employer-avatar">{{ bounty.employerUsername?.[0]?.toUpperCase() ?? '?' }}</div>
+          <img v-if="bounty.employerAvatarUrl" :src="imageUrl(bounty.employerAvatarUrl)" class="employer-avatar" alt="avatar" />
+          <div v-else class="employer-avatar">{{ bounty.employerUsername?.[0]?.toUpperCase() ?? '?' }}</div>
           <span class="employer-name">{{ bounty.employerUsername ?? bounty.employer_username ?? '未知' }}</span>
         </div>
         <div class="card-meta">
@@ -40,6 +41,7 @@
 import { computed } from 'vue'
 import StatusBadge from './StatusBadge.vue'
 import AmountDisplay from './AmountDisplay.vue'
+import { imageUrl } from 'src/api/upload'
 
 const props = defineProps({
   bounty: { type: Object, required: true },
@@ -185,6 +187,11 @@ const formatDeadline = computed(() => {
   font-size: 0.8rem;
   font-weight: 600;
   color: var(--color-accent-gold);
+  object-fit: cover;
+}
+
+img.employer-avatar {
+  display: block;
 }
 
 .employer-name {

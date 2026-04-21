@@ -727,6 +727,10 @@
         "createdAt": {
           "type": "string",
           "format": "date-time"
+        },
+        "reviewerAvatarUrl": {
+          "type": "string",
+          "title": "评论者头像"
         }
       }
     },

@@ -36,10 +36,10 @@ func main() {
 			TargetURL:   viper.GetString("SIMPLEBANK_URL"),
 			StripPrefix: "/api/v1/auth",
 			StaticRoutes: map[string]string{
-				"/auth/register": "/v1/create_user",
-				"/auth/login":    "/v1/login_user",
+				"/auth/register":     "/v1/create_user",
+				"/auth/login":        "/v1/login_user",
 				"/auth/verify_email": "/v1/verify_email",
-				"/auth/update":   "/v1/update_user",
+				"/auth/update":       "/v1/update_user",
 			},
 		},
 		{
@@ -63,22 +63,23 @@ func main() {
 			Prefix:    "/api/v1/bounties",
 			TargetURL: viper.GetString("ESCROW_BOUNTY_URL"),
 			StaticRoutes: map[string]string{
-				"/bounties":                       "/v1/bounties",
-				"/bounties/:bounty_id":            "/v1/bounties/{bounty_id}",
-				"/bounties/:bounty_id/accept":     "/v1/bounties/{bounty_id}/accept",
-				"/bounties/:bounty_id/confirm":    "/v1/bounties/{bounty_id}/confirm",
-				"/bounties/:bounty_id/complete":   "/v1/bounties/{bounty_id}/complete",
-				"/bounties/:bounty_id/submit":     "/v1/bounties/{bounty_id}/submit",
-				"/bounties/:bounty_id/approve":    "/v1/bounties/{bounty_id}/approve",
-				"/bounties/:bounty_id/reject":     "/v1/bounties/{bounty_id}/reject",
-				"/bounties/:bounty_id/cancel":     "/v1/bounties/{bounty_id}/cancel",
-				"/bounties/:bounty_id/messages":   "/v1/bounties/{bounty_id}/messages",
-				"/bounties/:bounty_id/comments":   "/v1/bounties/{bounty_id}/comments",
+				"/bounties/:bounty_id/accept":      "/v1/bounties/{bounty_id}/accept",
+				"/bounties/:bounty_id/confirm":     "/v1/bounties/{bounty_id}/confirm",
+				"/bounties/:bounty_id/complete":    "/v1/bounties/{bounty_id}/complete",
+				"/bounties/:bounty_id/submit":      "/v1/bounties/{bounty_id}/submit",
+				"/bounties/:bounty_id/approve":     "/v1/bounties/{bounty_id}/approve",
+				"/bounties/:bounty_id/reject":      "/v1/bounties/{bounty_id}/reject",
+				"/bounties/:bounty_id/cancel":      "/v1/bounties/{bounty_id}/cancel",
+				"/bounties/:bounty_id/messages":    "/v1/bounties/{bounty_id}/messages",
+				"/bounties/:bounty_id/comments":    "/v1/bounties/{bounty_id}/comments",
 				"/bounties/:bounty_id/invitations": "/v1/bounties/{bounty_id}/invitations",
-				"/bounties/applications/received": "/v1/bounties/applications/received",
 			},
 			MethodRoutes: map[string]string{
-				"/bounties/:bounty_id:DELETE": "/v1/bounties/{bounty_id}",
+				"GET /bounties":               "/v1/bounties",
+				"DELETE /bounties/:bounty_id": "/bounties/{bounty_id}",
+				"GET /bounties/:bounty_id":    "/v1/bounties/{bounty_id}",
+				"POST /upload":                "/upload",
+				"DELETE /upload/:image_id":    "/upload/{image_id}",
 			},
 		},
 		// Invitations
@@ -86,8 +87,8 @@ func main() {
 			Prefix:    "/api/v1/invitations",
 			TargetURL: viper.GetString("ESCROW_BOUNTY_URL"),
 			StaticRoutes: map[string]string{
-				"/invitations/received":           "/v1/invitations/received",
-				"/invitations/sent":               "/v1/invitations/sent",
+				"/invitations/received":               "/v1/invitations/received",
+				"/invitations/sent":                   "/v1/invitations/sent",
 				"/invitations/:invitation_id/respond": "/v1/invitations/{invitation_id}/respond",
 			},
 		},
@@ -95,8 +96,8 @@ func main() {
 			Prefix:    "/api/v1/profiles",
 			TargetURL: viper.GetString("USER_PROFILE_URL"),
 			StaticRoutes: map[string]string{
-				"/profiles":            "/v1/profiles",
-				"/profiles/:username":   "/v1/profiles/{username}",
+				"/profiles":                "/v1/profiles",
+				"/profiles/:username":      "/v1/profiles/{username}",
 				"/profiles/:username/role": "/v1/profiles/{username}/role",
 			},
 		},
@@ -105,7 +106,7 @@ func main() {
 			TargetURL: viper.GetString("USER_PROFILE_URL"),
 			StaticRoutes: map[string]string{
 				"/users/:username/reviews": "/v1/users/{username}/reviews",
-				"/users/search":           "/v1/users/search",
+				"/users/search":            "/v1/users/search",
 			},
 		},
 		{
@@ -127,8 +128,8 @@ func main() {
 			Prefix:    "/api/v1/payments",
 			TargetURL: viper.GetString("PAYMENT_SERVICE_URL"),
 			StaticRoutes: map[string]string{
-				"/payments":          "/v1/payments",
-				"/payments/create":   "/v1/payments/create",
+				"/payments":        "/v1/payments",
+				"/payments/create": "/v1/payments/create",
 			},
 		},
 		{
@@ -144,11 +145,11 @@ func main() {
 			Prefix:    "/api/v1/conversations",
 			TargetURL: viper.GetString("ESCROW_BOUNTY_URL"),
 			StaticRoutes: map[string]string{
-				"/conversations":                    "/v1/conversations",
-				"/conversations/unread":             "/v1/conversations/unread",
-				"/conversations/:conv_id":           "/v1/conversations/{conv_id}",
-				"/conversations/:conv_id/messages":  "/v1/conversations/{conv_id}/messages",
-				"/conversations/:conv_id/read":      "/v1/conversations/{conv_id}/read",
+				"/conversations":                   "/v1/conversations",
+				"/conversations/unread":            "/v1/conversations/unread",
+				"/conversations/:conv_id":          "/v1/conversations/{conv_id}",
+				"/conversations/:conv_id/messages": "/v1/conversations/{conv_id}/messages",
+				"/conversations/:conv_id/read":     "/v1/conversations/{conv_id}/read",
 			},
 		},
 		// Comment routes
@@ -157,7 +158,7 @@ func main() {
 			TargetURL: viper.GetString("ESCROW_BOUNTY_URL"),
 			StaticRoutes: map[string]string{
 				"/comments/:comment_id": "/v1/comments/{comment_id}",
-				"/comments":            "/v1/comments",
+				"/comments":             "/v1/comments",
 			},
 		},
 	}
@@ -168,6 +169,31 @@ func main() {
 	}
 
 	r := router.NewRouter(maker, allowedOrigins, backends)
+
+	// Catch-all: log unmatched requests
+	r.NoRoute(func(c *gin.Context) {
+		log.Printf("[gateway] 404 NoRoute: %s %s", c.Request.Method, c.Request.URL.Path)
+		c.JSON(404, gin.H{"error": "not found", "path": c.Request.URL.Path})
+	})
+
+	// Static file proxy: /uploads/* -> escrow-bounty uploads directory (no JWT auth)
+	// escrow-bounty's http mux serves /uploads/ -> ./uploads/ dir via StripPrefix
+	uploadsProxy := &httputil.ReverseProxy{
+		Director: func(req *http.Request) {
+			// Strip /uploads prefix: /uploads/2026/04/file.png -> /2026/04/file.png
+			path := strings.TrimPrefix(req.URL.Path, "/uploads")
+			if !strings.HasPrefix(path, "/") {
+				path = "/" + path
+			}
+			req.URL, _ = url.Parse(viper.GetString("ESCROW_BOUNTY_URL") + "/uploads" + path)
+			req.Header.Del("Origin")
+			req.Header.Set("X-Forwarded-Host", req.Host)
+			req.Header.Set("X-Real-IP", req.RemoteAddr)
+		},
+	}
+	r.GET("/uploads/*filepath", func(c *gin.Context) {
+		uploadsProxy.ServeHTTP(c.Writer, c.Request)
+	})
 
 	// Alipay webhook pass-through (no JWT auth, must be before swagger routes)
 	alipayWebhookTarget := viper.GetString("PAYMENT_SERVICE_URL") + "/webhook/alipay"
@@ -376,4 +402,3 @@ func getContentType(file string) string {
 		return "text/plain"
 	}
 }
-

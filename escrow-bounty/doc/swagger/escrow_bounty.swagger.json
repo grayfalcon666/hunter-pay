@@ -1078,12 +1078,18 @@
     "EscrowBountyServiceCreateCommentBody": {
       "type": "object",
       "properties": {
-        "parentId": {
+        "replyToId": {
           "type": "string",
-          "format": "int64"
+          "format": "int64",
+          "title": "被回复的评论ID，0 表示发布根评论"
         },
         "content": {
           "type": "string"
+        },
+        "imageId": {
+          "type": "string",
+          "format": "int64",
+          "title": "上传后的图片 ID"
         }
       }
     },
@@ -1188,6 +1194,9 @@
         "hunterUsername": {
           "type": "string",
           "title": "当前 ACCEPTED 的猎人用户名（无则空字符串）"
+        },
+        "employerAvatarUrl": {
+          "type": "string"
         }
       }
     },
@@ -1223,6 +1232,9 @@
         "bounty": {
           "$ref": "#/definitions/pbBounty",
           "title": "关联悬赏信息（响应中附加）"
+        },
+        "hunterAvatarUrl": {
+          "type": "string"
         }
       }
     },
@@ -1270,7 +1282,13 @@
         },
         "parentId": {
           "type": "string",
-          "format": "int64"
+          "format": "int64",
+          "title": "指向根评论，0/NULL 表示自己是根评论"
+        },
+        "replyToId": {
+          "type": "string",
+          "format": "int64",
+          "title": "指向被回复的具体评论，0/NULL 表示直接回复父亲"
         },
         "authorUsername": {
           "type": "string"
@@ -1287,11 +1305,28 @@
           "items": {
             "type": "object",
             "$ref": "#/definitions/pbComment"
-          }
+          },
+          "title": "deprecated: 前端按 parent_id 手动组织"
         },
         "parentAuthorUsername": {
           "type": "string",
-          "title": "for reply quotes"
+          "title": "for reply quotes (实际是 reply_to 的作者)"
+        },
+        "imagePath": {
+          "type": "string",
+          "title": "评论图片路径"
+        },
+        "authorAvatarUrl": {
+          "type": "string",
+          "title": "作者头像 URL"
+        },
+        "replyToUsername": {
+          "type": "string",
+          "title": "被回复评论的作者名（用于引用框显示）"
+        },
+        "replyToContent": {
+          "type": "string",
+          "title": "被回复评论的内容（用于引用框显示）"
         }
       }
     },
@@ -1540,7 +1575,8 @@
           "items": {
             "type": "object",
             "$ref": "#/definitions/pbComment"
-          }
+          },
+          "title": "只返回根评论（parent_id = 0/NULL），前端按 parent_id 拉子评论"
         }
       }
     },

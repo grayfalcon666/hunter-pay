@@ -36,6 +36,7 @@ type Bounty struct {
 	Deadline          *timestamppb.Timestamp `protobuf:"bytes,10,opt,name=deadline,proto3" json:"deadline,omitempty"`
 	SubmissionText    string                 `protobuf:"bytes,11,opt,name=submission_text,json=submissionText,proto3" json:"submission_text,omitempty"`
 	HunterUsername    string                 `protobuf:"bytes,12,opt,name=hunter_username,json=hunterUsername,proto3" json:"hunter_username,omitempty"` // 当前 ACCEPTED 的猎人用户名（无则空字符串）
+	EmployerAvatarUrl string                 `protobuf:"bytes,13,opt,name=employer_avatar_url,json=employerAvatarUrl,proto3" json:"employer_avatar_url,omitempty"`
 	unknownFields     protoimpl.UnknownFields
 	sizeCache         protoimpl.SizeCache
 }
@@ -154,6 +155,13 @@ func (x *Bounty) GetHunterUsername() string {
 	return ""
 }
 
+func (x *Bounty) GetEmployerAvatarUrl() string {
+	if x != nil {
+		return x.EmployerAvatarUrl
+	}
+	return ""
+}
+
 type BountyApplication struct {
 	state           protoimpl.MessageState `protogen:"open.v1"`
 	Id              int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
@@ -164,6 +172,7 @@ type BountyApplication struct {
 	CreatedAt       *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 	UpdatedAt       *timestamppb.Timestamp `protobuf:"bytes,6,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
 	Bounty          *Bounty                `protobuf:"bytes,8,opt,name=bounty,proto3" json:"bounty,omitempty"` // 关联悬赏信息（响应中附加）
+	HunterAvatarUrl string                 `protobuf:"bytes,9,opt,name=hunter_avatar_url,json=hunterAvatarUrl,proto3" json:"hunter_avatar_url,omitempty"`
 	unknownFields   protoimpl.UnknownFields
 	sizeCache       protoimpl.SizeCache
 }
@@ -254,11 +263,18 @@ func (x *BountyApplication) GetBounty() *Bounty {
 	return nil
 }
 
+func (x *BountyApplication) GetHunterAvatarUrl() string {
+	if x != nil {
+		return x.HunterAvatarUrl
+	}
+	return ""
+}
+
 var File_common_proto protoreflect.FileDescriptor
 
 const file_common_proto_rawDesc = "" +
 	"\n" +
-	"\fcommon.proto\x12\x02pb\x1a\x1fgoogle/protobuf/timestamp.proto\"\xea\x03\n" +
+	"\fcommon.proto\x12\x02pb\x1a\x1fgoogle/protobuf/timestamp.proto\"\x9a\x04\n" +
 	"\x06Bounty\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12+\n" +
 	"\x11employer_username\x18\x02 \x01(\tR\x10employerUsername\x12.\n" +
@@ -274,7 +290,8 @@ const file_common_proto_rawDesc = "" +
 	"\bdeadline\x18\n" +
 	" \x01(\v2\x1a.google.protobuf.TimestampR\bdeadline\x12'\n" +
 	"\x0fsubmission_text\x18\v \x01(\tR\x0esubmissionText\x12'\n" +
-	"\x0fhunter_username\x18\f \x01(\tR\x0ehunterUsername\"\xc7\x02\n" +
+	"\x0fhunter_username\x18\f \x01(\tR\x0ehunterUsername\x12.\n" +
+	"\x13employer_avatar_url\x18\r \x01(\tR\x11employerAvatarUrl\"\xf3\x02\n" +
 	"\x11BountyApplication\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x1b\n" +
 	"\tbounty_id\x18\x02 \x01(\x03R\bbountyId\x12'\n" +
@@ -286,7 +303,8 @@ const file_common_proto_rawDesc = "" +
 	"\n" +
 	"updated_at\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\x12\"\n" +
 	"\x06bounty\x18\b \x01(\v2\n" +
-	".pb.BountyR\x06bountyB+Z)github.com/grayfalcon666/escrow-bounty/pbb\x06proto3"
+	".pb.BountyR\x06bounty\x12*\n" +
+	"\x11hunter_avatar_url\x18\t \x01(\tR\x0fhunterAvatarUrlB+Z)github.com/grayfalcon666/escrow-bounty/pbb\x06proto3"
 
 var (
 	file_common_proto_rawDescOnce sync.Once

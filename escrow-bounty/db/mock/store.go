@@ -143,18 +143,32 @@ func (mr *MockStoreMockRecorder) CreateBounty(ctx, bounty any) *gomock.Call {
 }
 
 // CreateComment mocks base method.
-func (m *MockStore) CreateComment(ctx context.Context, bountyID int64, parentID *int64, authorUsername, content string) (*models.Comment, error) {
+func (m *MockStore) CreateComment(ctx context.Context, bountyID int64, replyToID *int64, authorUsername, content string) (*models.Comment, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateComment", ctx, bountyID, parentID, authorUsername, content)
+	ret := m.ctrl.Call(m, "CreateComment", ctx, bountyID, replyToID, authorUsername, content)
 	ret0, _ := ret[0].(*models.Comment)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CreateComment indicates an expected call of CreateComment.
-func (mr *MockStoreMockRecorder) CreateComment(ctx, bountyID, parentID, authorUsername, content any) *gomock.Call {
+func (mr *MockStoreMockRecorder) CreateComment(ctx, bountyID, replyToID, authorUsername, content any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateComment", reflect.TypeOf((*MockStore)(nil).CreateComment), ctx, bountyID, parentID, authorUsername, content)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateComment", reflect.TypeOf((*MockStore)(nil).CreateComment), ctx, bountyID, replyToID, authorUsername, content)
+}
+
+// CreateImage mocks base method.
+func (m *MockStore) CreateImage(ctx context.Context, img *models.Image) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateImage", ctx, img)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CreateImage indicates an expected call of CreateImage.
+func (mr *MockStoreMockRecorder) CreateImage(ctx, img any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateImage", reflect.TypeOf((*MockStore)(nil).CreateImage), ctx, img)
 }
 
 // CreateInvitation mocks base method.
@@ -230,6 +244,50 @@ func (mr *MockStoreMockRecorder) DeleteComment(ctx, commentID, username any) *go
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteComment", reflect.TypeOf((*MockStore)(nil).DeleteComment), ctx, commentID, username)
 }
 
+// DeleteCommentCascade mocks base method.
+func (m *MockStore) DeleteCommentCascade(ctx context.Context, commentID int64, username string) ([]string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteCommentCascade", ctx, commentID, username)
+	ret0, _ := ret[0].([]string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DeleteCommentCascade indicates an expected call of DeleteCommentCascade.
+func (mr *MockStoreMockRecorder) DeleteCommentCascade(ctx, commentID, username any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteCommentCascade", reflect.TypeOf((*MockStore)(nil).DeleteCommentCascade), ctx, commentID, username)
+}
+
+// DeleteCommentImages mocks base method.
+func (m *MockStore) DeleteCommentImages(ctx context.Context, commentID int64) ([]models.Image, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteCommentImages", ctx, commentID)
+	ret0, _ := ret[0].([]models.Image)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DeleteCommentImages indicates an expected call of DeleteCommentImages.
+func (mr *MockStoreMockRecorder) DeleteCommentImages(ctx, commentID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteCommentImages", reflect.TypeOf((*MockStore)(nil).DeleteCommentImages), ctx, commentID)
+}
+
+// DeleteImage mocks base method.
+func (m *MockStore) DeleteImage(ctx context.Context, id int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteImage", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteImage indicates an expected call of DeleteImage.
+func (mr *MockStoreMockRecorder) DeleteImage(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteImage", reflect.TypeOf((*MockStore)(nil).DeleteImage), ctx, id)
+}
+
 // DeleteInvitation mocks base method.
 func (m *MockStore) DeleteInvitation(ctx context.Context, id int64, posterUsername string) error {
 	m.ctrl.T.Helper()
@@ -285,6 +343,36 @@ func (m *MockStore) GetBountyByID(ctx context.Context, id int64) (*models.Bounty
 func (mr *MockStoreMockRecorder) GetBountyByID(ctx, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBountyByID", reflect.TypeOf((*MockStore)(nil).GetBountyByID), ctx, id)
+}
+
+// GetComment mocks base method.
+func (m *MockStore) GetComment(ctx context.Context, id int64) (*models.Comment, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetComment", ctx, id)
+	ret0, _ := ret[0].(*models.Comment)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetComment indicates an expected call of GetComment.
+func (mr *MockStoreMockRecorder) GetComment(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetComment", reflect.TypeOf((*MockStore)(nil).GetComment), ctx, id)
+}
+
+// GetImage mocks base method.
+func (m *MockStore) GetImage(ctx context.Context, id int64) (*models.Image, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetImage", ctx, id)
+	ret0, _ := ret[0].(*models.Image)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetImage indicates an expected call of GetImage.
+func (mr *MockStoreMockRecorder) GetImage(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetImage", reflect.TypeOf((*MockStore)(nil).GetImage), ctx, id)
 }
 
 // GetInvitationByID mocks base method.
@@ -465,6 +553,21 @@ func (m *MockStore) ListExpiredBounties(ctx context.Context, limit int) ([]model
 func (mr *MockStoreMockRecorder) ListExpiredBounties(ctx, limit any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListExpiredBounties", reflect.TypeOf((*MockStore)(nil).ListExpiredBounties), ctx, limit)
+}
+
+// ListImagesByEntity mocks base method.
+func (m *MockStore) ListImagesByEntity(ctx context.Context, entityType string, entityID string) ([]models.Image, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListImagesByEntity", ctx, entityType, entityID)
+	ret0, _ := ret[0].([]models.Image)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListImagesByEntity indicates an expected call of ListImagesByEntity.
+func (mr *MockStoreMockRecorder) ListImagesByEntity(ctx, entityType, entityID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListImagesByEntity", reflect.TypeOf((*MockStore)(nil).ListImagesByEntity), ctx, entityType, entityID)
 }
 
 // ListInvitationsByHunter mocks base method.

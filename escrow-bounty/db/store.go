@@ -10,6 +10,7 @@ import (
 
 	"github.com/grayfalcon666/escrow-bounty/models"
 	simplebankpb "github.com/grayfalcon666/escrow-bounty/simplebankpb"
+	"github.com/lib/pq"
 	"gorm.io/gorm"
 )
 
@@ -52,9 +53,18 @@ type Store interface {
 	GetUnreadCounts(ctx context.Context, username string) (map[int64]int, error)
 	// Comment operations
 	ListComments(ctx context.Context, bountyID int64) ([]models.Comment, error)
-	CreateComment(ctx context.Context, bountyID int64, parentID *int64, authorUsername, content string) (*models.Comment, error)
+	GetComment(ctx context.Context, id int64) (*models.Comment, error)
+	CreateComment(ctx context.Context, bountyID int64, replyToID *int64, authorUsername, content string, imageID *int64) (*models.Comment, error)
 	DeleteComment(ctx context.Context, commentID int64, username string) error
+	DeleteCommentCascade(ctx context.Context, commentID int64, username string) ([]string, error) // 返回被删除的图片相对路径
 	ListCommentsByUsername(ctx context.Context, username string, limit, offset int) ([]models.Comment, error)
+	// Image operations
+	CreateImage(ctx context.Context, img *models.Image) error
+	GetImage(ctx context.Context, id int64) (*models.Image, error)
+	GetAvatarUrlsByUsernames(ctx context.Context, usernames []string) (map[string]string, error)
+	DeleteImage(ctx context.Context, id int64) error
+	ListImagesByEntity(ctx context.Context, entityType string, entityID string) ([]models.Image, error)
+	DeleteCommentImages(ctx context.Context, commentID int64) ([]models.Image, error) // 返回被删除的图片记录（含路径）
 	// Invitation operations
 	CreateInvitation(ctx context.Context, inv *models.Invitation) (*models.Invitation, error)
 	GetInvitationByID(ctx context.Context, id int64) (*models.Invitation, error)
@@ -966,36 +976,78 @@ func (s *SQLStore) GetUnreadCounts(ctx context.Context, username string) (map[in
 func (s *SQLStore) ListComments(ctx context.Context, bountyID int64) ([]models.Comment, error) {
 	var comments []models.Comment
 	err := s.db.WithContext(ctx).
-		Preload("Replies").
 		Where("bounty_id = ?", bountyID).
 		Order("created_at ASC").
 		Find(&comments).Error
 	return comments, err
 }
 
-func (s *SQLStore) CreateComment(ctx context.Context, bountyID int64, parentID *int64, authorUsername, content string) (*models.Comment, error) {
+func (s *SQLStore) GetAvatarUrlsByUsernames(ctx context.Context, usernames []string) (map[string]string, error) {
+	if len(usernames) == 0 {
+		return map[string]string{}, nil
+	}
+	type result struct {
+		Username  string
+		AvatarURL string
+	}
+	var results []result
+	err := s.db.WithContext(ctx).
+		Raw("SELECT username, COALESCE(avatar_url, '') AS avatar_url FROM user_profiles WHERE username = ANY($1)", pq.Array(usernames)).
+		Scan(&results).Error
+	if err != nil {
+		return nil, err
+	}
+	m := make(map[string]string, len(results))
+	for _, r := range results {
+		m[r.Username] = r.AvatarURL
+	}
+	return m, nil
+}
+
+func (s *SQLStore) GetComment(ctx context.Context, id int64) (*models.Comment, error) {
+	var comment models.Comment
+	if err := s.db.WithContext(ctx).First(&comment, id).Error; err != nil {
+		return nil, err
+	}
+	return &comment, nil
+}
+
+func (s *SQLStore) CreateComment(ctx context.Context, bountyID int64, replyToID *int64, authorUsername, content string, imageID *int64) (*models.Comment, error) {
 	// Verify bounty exists
 	var bounty models.Bounty
 	if err := s.db.WithContext(ctx).First(&bounty, bountyID).Error; err != nil {
 		return nil, err
 	}
 
-	// Verify parent belongs to same bounty if provided
-	if parentID != nil {
-		var parent models.Comment
-		if err := s.db.WithContext(ctx).First(&parent, *parentID).Error; err != nil {
+	var parentID *int64
+	// 规则 1: 没有 replyToID -> 这是根评论，parentID = NULL
+	// 规则 2: 有 replyToID，检测其 parent_id 是否为空
+	//   - 为空 -> replyToID 就是父亲，parentID = replyToID
+	//   - 非空 -> 继承父亲，parentID = replyToID 的 parent_id，replyToID 保持不变
+	if replyToID != nil {
+		var replyTo models.Comment
+		if err := s.db.WithContext(ctx).First(&replyTo, *replyToID).Error; err != nil {
 			return nil, err
 		}
-		if parent.BountyID != bountyID {
+		if replyTo.BountyID != bountyID {
 			return nil, fmt.Errorf("parent comment does not belong to this bounty")
+		}
+		if replyTo.ParentID == nil {
+			// 规则 2: replyTo 本身是父亲评论
+			parentID = replyToID
+		} else {
+			// 规则 3: 继承父亲评论的 parent_id
+			parentID = replyTo.ParentID
 		}
 	}
 
 	comment := &models.Comment{
 		BountyID:       bountyID,
-		ParentID:       parentID,
-		AuthorUsername:  authorUsername,
+		ParentID:       parentID,  // NULL 表示根评论，非 NULL 指向根评论
+		ReplyToID:      replyToID, // NULL 表示直接回复父亲，非 NULL 指向具体被回复的评论
+		AuthorUsername: authorUsername,
 		Content:        content,
+		ImageID:        imageID,
 	}
 	if err := s.db.WithContext(ctx).Create(comment).Error; err != nil {
 		return nil, err
@@ -1018,16 +1070,120 @@ func (s *SQLStore) DeleteComment(ctx context.Context, commentID int64, username 
 	return s.db.WithContext(ctx).Delete(&comment).Error
 }
 
+// DeleteCommentCascade 删除评论 + 所有子孙评论（通过 reply_to_id 链向上追溯）+ 关联图片
+// 返回被删除的图片相对路径列表，由调用方负责物理文件清理
+func (s *SQLStore) DeleteCommentCascade(ctx context.Context, commentID int64, username string) ([]string, error) {
+	var deletedPaths []string
+	err := s.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		var comment models.Comment
+		if err := tx.First(&comment, commentID).Error; err != nil {
+			return err
+		}
+		if comment.AuthorUsername != username {
+			return fmt.Errorf("permission denied: can only delete your own comments")
+		}
+
+		// 收集所有要删除的评论ID
+		allIDs := []int64{commentID}
+
+		// 递归收集所有 reply_to_id 指向已删除评论的子孙评论
+		queue := []int64{commentID}
+		for len(queue) > 0 {
+			currentID := queue[0]
+			queue = queue[1:]
+			var childReplyIDs []int64
+			tx.Model(&models.Comment{}).Where("reply_to_id = ?", currentID).Pluck("id", &childReplyIDs)
+			for _, childID := range childReplyIDs {
+				allIDs = append(allIDs, childID)
+				queue = append(queue, childID)
+			}
+		}
+
+		// 查询关联图片路径（用于物理清理）
+		// 图片通过 comments.image_id 关联，按 image_id 查
+		var imgIDs []int64
+		tx.Model(&models.Comment{}).Where("id IN ?", allIDs).Pluck("COALESCE(image_id, 0)", &imgIDs)
+		realImgIDs := make([]int64, 0)
+		for _, id := range imgIDs {
+			if id > 0 {
+				realImgIDs = append(realImgIDs, id)
+			}
+		}
+		var imgs []models.Image
+		if len(realImgIDs) > 0 {
+			tx.Where("id IN ?", realImgIDs).Find(&imgs)
+			for _, img := range imgs {
+				deletedPaths = append(deletedPaths, img.RelativePath)
+			}
+			tx.Where("id IN ?", realImgIDs).Delete(&models.Image{})
+		}
+
+		// 删除所有子孙评论（通过 reply_to_id 链找到的）
+		if len(allIDs) > 1 {
+			if err := tx.Where("id IN ?", allIDs[1:]).Delete(&models.Comment{}).Error; err != nil {
+				return err
+			}
+		}
+
+		// 删除自己
+		return tx.Delete(&comment).Error
+	})
+	return deletedPaths, err
+}
+
 func (s *SQLStore) ListCommentsByUsername(ctx context.Context, username string, limit, offset int) ([]models.Comment, error) {
 	var comments []models.Comment
 	err := s.db.WithContext(ctx).
-		Preload("Replies").
 		Where("author_username = ?", username).
 		Order("created_at DESC").
 		Limit(limit).
 		Offset(offset).
 		Find(&comments).Error
 	return comments, err
+}
+
+// ==========================================
+// Images (统一图片资源)
+// ==========================================
+
+func (s *SQLStore) CreateImage(ctx context.Context, img *models.Image) error {
+	return s.db.WithContext(ctx).Create(img).Error
+}
+
+func (s *SQLStore) GetImage(ctx context.Context, id int64) (*models.Image, error) {
+	var img models.Image
+	if err := s.db.WithContext(ctx).First(&img, id).Error; err != nil {
+		return nil, err
+	}
+	return &img, nil
+}
+
+func (s *SQLStore) DeleteImage(ctx context.Context, id int64) error {
+	return s.db.WithContext(ctx).Delete(&models.Image{}, id).Error
+}
+
+func (s *SQLStore) ListImagesByEntity(ctx context.Context, entityType string, entityID string) ([]models.Image, error) {
+	var imgs []models.Image
+	err := s.db.WithContext(ctx).
+		Where("entity_type = ? AND entity_id = ?", entityType, entityID).
+		Order("created_at ASC").
+		Find(&imgs).Error
+	return imgs, err
+}
+
+func (s *SQLStore) DeleteCommentImages(ctx context.Context, commentID int64) ([]models.Image, error) {
+	var imgs []models.Image
+	if err := s.db.WithContext(ctx).
+		Where("entity_type = 'comment' AND entity_id = ?", commentID).
+		Find(&imgs).Error; err != nil {
+		return nil, err
+	}
+	if err := s.db.WithContext(ctx).
+		Where("entity_type = 'comment' AND entity_id = ?", commentID).
+		Delete(&models.Image{}).Error; err != nil {
+		return nil, err
+	}
+	return imgs, nil
 }
 
 // ==========================================

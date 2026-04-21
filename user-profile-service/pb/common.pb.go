@@ -211,17 +211,18 @@ func (x *UserProfile) GetEmployerFulfillmentIndex() int32 {
 }
 
 type UserReview struct {
-	state            protoimpl.MessageState `protogen:"open.v1"`
-	Id               int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	ReviewerUsername string                 `protobuf:"bytes,2,opt,name=reviewer_username,json=reviewerUsername,proto3" json:"reviewer_username,omitempty"`
-	ReviewedUsername string                 `protobuf:"bytes,3,opt,name=reviewed_username,json=reviewedUsername,proto3" json:"reviewed_username,omitempty"`
-	BountyId         int64                  `protobuf:"varint,4,opt,name=bounty_id,json=bountyId,proto3" json:"bounty_id,omitempty"`
-	Rating           int32                  `protobuf:"varint,5,opt,name=rating,proto3" json:"rating,omitempty"` // 1 ~ 5
-	Comment          string                 `protobuf:"bytes,6,opt,name=comment,proto3" json:"comment,omitempty"`
-	ReviewType       string                 `protobuf:"bytes,7,opt,name=review_type,json=reviewType,proto3" json:"review_type,omitempty"` // EMPLOYER_TO_HUNTER | HUNTER_TO_EMPLOYER
-	CreatedAt        *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	unknownFields    protoimpl.UnknownFields
-	sizeCache        protoimpl.SizeCache
+	state             protoimpl.MessageState `protogen:"open.v1"`
+	Id                int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	ReviewerUsername  string                 `protobuf:"bytes,2,opt,name=reviewer_username,json=reviewerUsername,proto3" json:"reviewer_username,omitempty"`
+	ReviewedUsername  string                 `protobuf:"bytes,3,opt,name=reviewed_username,json=reviewedUsername,proto3" json:"reviewed_username,omitempty"`
+	BountyId          int64                  `protobuf:"varint,4,opt,name=bounty_id,json=bountyId,proto3" json:"bounty_id,omitempty"`
+	Rating            int32                  `protobuf:"varint,5,opt,name=rating,proto3" json:"rating,omitempty"` // 1 ~ 5
+	Comment           string                 `protobuf:"bytes,6,opt,name=comment,proto3" json:"comment,omitempty"`
+	ReviewType        string                 `protobuf:"bytes,7,opt,name=review_type,json=reviewType,proto3" json:"review_type,omitempty"` // EMPLOYER_TO_HUNTER | HUNTER_TO_EMPLOYER
+	CreatedAt         *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	ReviewerAvatarUrl string                 `protobuf:"bytes,9,opt,name=reviewer_avatar_url,json=reviewerAvatarUrl,proto3" json:"reviewer_avatar_url,omitempty"` // 评论者头像
+	unknownFields     protoimpl.UnknownFields
+	sizeCache         protoimpl.SizeCache
 }
 
 func (x *UserReview) Reset() {
@@ -310,6 +311,13 @@ func (x *UserReview) GetCreatedAt() *timestamppb.Timestamp {
 	return nil
 }
 
+func (x *UserReview) GetReviewerAvatarUrl() string {
+	if x != nil {
+		return x.ReviewerAvatarUrl
+	}
+	return ""
+}
+
 var File_common_proto protoreflect.FileDescriptor
 
 const file_common_proto_rawDesc = "" +
@@ -338,7 +346,7 @@ const file_common_proto_rawDesc = "" +
 	"\n" +
 	"updated_at\x18\x0e \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\x128\n" +
 	"\x18hunter_fulfillment_index\x18\x12 \x01(\x05R\x16hunterFulfillmentIndex\x12<\n" +
-	"\x1aemployer_fulfillment_index\x18\x13 \x01(\x05R\x18employerFulfillmentIndex\"\xa1\x02\n" +
+	"\x1aemployer_fulfillment_index\x18\x13 \x01(\x05R\x18employerFulfillmentIndex\"\xd1\x02\n" +
 	"\n" +
 	"UserReview\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12+\n" +
@@ -350,7 +358,8 @@ const file_common_proto_rawDesc = "" +
 	"\vreview_type\x18\a \x01(\tR\n" +
 	"reviewType\x129\n" +
 	"\n" +
-	"created_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAtB2Z0github.com/grayfalcon666/user-profile-service/pbb\x06proto3"
+	"created_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x12.\n" +
+	"\x13reviewer_avatar_url\x18\t \x01(\tR\x11reviewerAvatarUrlB2Z0github.com/grayfalcon666/user-profile-service/pbb\x06proto3"
 
 var (
 	file_common_proto_rawDescOnce sync.Once

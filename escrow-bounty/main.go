@@ -119,7 +119,7 @@ func runGrpcServer(config util.Config, server pb.EscrowBountyServiceServer) {
 	}
 }
 
-func runGatewayServer(config util.Config, server pb.EscrowBountyServiceServer) {
+func runGatewayServer(config util.Config, server *gapi.Server) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -130,11 +130,43 @@ func runGatewayServer(config util.Config, server pb.EscrowBountyServiceServer) {
 		log.Fatalf("无法注册 Gateway 处理器: %v", err)
 	}
 
-	// 创建标准 HTTP Mux 并将所有请求路由给 grpcMux 处理
-	mux := http.NewServeMux()
-	mux.Handle("/", grpcMux)
+	// 初始化图片上传配置
+	gapi.InitUpload(config)
 
-	// 配置 CORS 中间件
+	// 混合ServeMux：
+	// - POST/DELETE /upload, /upload/* -> 上传/删除处理器
+	// - GET /uploads/* -> 静态文件服务（图片预览）
+	// - /v1/* -> grpc-gateway
+	mux := http.NewServeMux()
+
+	// 上传路由：同时注册 /upload 和 /upload/（Go ServeMux 会自动处理尾部重定向）
+	mux.HandleFunc("/upload", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodPost {
+			server.UploadImageHandle(w, r)
+		} else if r.Method == http.MethodDelete {
+			server.DeleteImageHandle(w, r)
+		} else {
+			http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+		}
+	})
+	mux.HandleFunc("/upload/", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodPost {
+			server.UploadImageHandle(w, r)
+		} else if r.Method == http.MethodDelete {
+			server.DeleteImageHandle(w, r)
+		} else {
+			http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+		}
+	})
+
+	// 静态文件服务：/uploads/YYYY/MM/filename.jpg
+	staticHandler := http.StripPrefix("/uploads/", http.FileServer(http.Dir(gapi.GetUploadBasePath())))
+	mux.Handle("/uploads/", staticHandler)
+
+	// gRPC Gateway
+	mux.Handle("/v1/", grpcMux)
+
+	// 配置 CORS
 	corsHandler := cors.New(cors.Options{
 		AllowedOrigins:   []string{"*"},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},

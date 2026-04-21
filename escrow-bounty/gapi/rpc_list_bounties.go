@@ -27,9 +27,22 @@ func (server *Server) ListBounties(ctx context.Context, req *pb.ListBountiesRequ
 		return nil, status.Errorf(codes.Internal, "查询悬赏列表失败: %v", err)
 	}
 
+	// 批量获取雇主头像
+	employerSet := make(map[string]struct{})
+	for _, b := range bounties {
+		employerSet[b.EmployerUsername] = struct{}{}
+	}
+	employerUsernames := make([]string, 0, len(employerSet))
+	for u := range employerSet {
+		employerUsernames = append(employerUsernames, u)
+	}
+	employerAvatarMap, _ := server.store.GetAvatarUrlsByUsernames(ctx, employerUsernames)
+
 	var pbBounties []*pb.Bounty
 	for _, bounty := range bounties {
-		pbBounties = append(pbBounties, convertBounty(&bounty))
+		pbB := convertBounty(&bounty)
+		pbB.EmployerAvatarUrl = employerAvatarMap[bounty.EmployerUsername]
+		pbBounties = append(pbBounties, pbB)
 	}
 
 	return &pb.ListBountiesResponse{

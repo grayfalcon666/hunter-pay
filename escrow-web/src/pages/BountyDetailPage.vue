@@ -5,6 +5,16 @@
         <q-spinner-dots color="amber" size="40px" />
       </div>
 
+      <div v-else-if="bountyStore.error" class="loading-area" style="flex-direction:column;gap:8px;">
+        <p style="color:var(--color-accent-red);">加载失败: {{ bountyStore.error }}</p>
+        <q-btn unelevated color="primary" label="重试" @click="bountyStore.fetchBounty(id)" />
+      </div>
+
+      <div v-else-if="!bounty" class="loading-area" style="flex-direction:column;gap:8px;">
+        <p style="color:var(--color-text-muted);">未找到该悬赏</p>
+        <q-btn unelevated color="primary" label="返回" @click="$router.push('/')" />
+      </div>
+
       <template v-else-if="bounty">
         <div class="detail-grid">
           <!-- 左栏：悬赏信息 -->
@@ -256,7 +266,8 @@
               <q-list v-else separator>
                 <q-item v-for="app in bounty.applications" :key="app.id" class="app-item">
                   <q-item-section avatar>
-                    <div class="app-avatar">{{ (app.hunterUsername ?? app.hunter_username)?.[0]?.toUpperCase() ?? '?' }}</div>
+                    <img v-if="app.hunterAvatarUrl" :src="imageUrl(app.hunterAvatarUrl)" class="app-avatar" alt="avatar" />
+                    <div v-else class="app-avatar">{{ (app.hunterUsername ?? app.hunter_username)?.[0]?.toUpperCase() ?? '?' }}</div>
                   </q-item-section>
                   <q-item-section>
                     <router-link :to="`/profile/${app.hunterUsername ?? app.hunter_username}`" class="app-name">
@@ -289,7 +300,8 @@
                 @click="handleConfirmHunter(app.id)"
               >
                 <q-item-section avatar>
-                  <div class="app-avatar">{{ (app.hunterUsername ?? app.hunter_username)?.[0]?.toUpperCase() ?? '?' }}</div>
+                  <img v-if="app.hunterAvatarUrl" :src="imageUrl(app.hunterAvatarUrl)" class="app-avatar" alt="avatar" />
+                  <div v-else class="app-avatar">{{ (app.hunterUsername ?? app.hunter_username)?.[0]?.toUpperCase() ?? '?' }}</div>
                 </q-item-section>
                 <q-item-section>
                   <q-item-label>{{ app.hunterUsername ?? app.hunter_username }}</q-item-label>
@@ -377,6 +389,7 @@ import { useAuthStore } from 'src/stores/auth'
 import { useProfileStore } from 'src/stores/profile'
 import StatusBadge from 'src/components/bounty/StatusBadge.vue'
 import AmountDisplay from 'src/components/bounty/AmountDisplay.vue'
+import { imageUrl } from 'src/api/upload'
 import BountyComments from 'src/components/bounty/BountyComments.vue'
 
 const route = useRoute()
@@ -586,6 +599,7 @@ async function handleDelete() {
 }
 
 onMounted(() => {
+  console.log('[BountyDetail] onMounted, id:', id.value)
   bountyStore.resetState()
   bountyStore.fetchBounty(id.value)
   // 拉取当前用户评论列表，用于判断是否已评价
@@ -755,6 +769,11 @@ async function handleSubmitReview() {
   display: flex; align-items: center; justify-content: center;
   font-family: var(--font-display); font-size: 0.85rem; font-weight: 600;
   color: var(--color-accent-gold);
+  object-fit: cover;
+}
+
+img.app-avatar {
+  display: block;
 }
 .app-name { color: var(--color-accent-teal); text-decoration: none; font-weight: 500; &:hover { text-decoration: underline; } }
 

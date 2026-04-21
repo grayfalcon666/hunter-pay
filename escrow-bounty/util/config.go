@@ -15,6 +15,7 @@ type Config struct {
 	UserProfileServiceAddress string `mapstructure:"USER_PROFILE_SERVICE_ADDRESS"`
 	WSServerAddress          string `mapstructure:"WS_SERVER_ADDRESS"`
 	RabbitMQURL              string `mapstructure:"RABBITMQ_URL"`
+	UploadPath                string `mapstructure:"UPLOAD_PATH"`
 }
 
 func LoadConfig(path string) (config Config, err error) {

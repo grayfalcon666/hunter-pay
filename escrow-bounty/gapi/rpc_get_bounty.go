@@ -27,13 +27,28 @@ func (server *Server) GetBounty(ctx context.Context, req *pb.GetBountyRequest) (
 		return nil, status.Errorf(codes.Internal, "查询悬赏详情失败: %v", err)
 	}
 
+	// 收集所有用户名（雇主+猎人）用于批量查询头像
+	usernameSet := make(map[string]struct{})
+	usernameSet[bounty.EmployerUsername] = struct{}{}
+	for _, app := range bounty.Applications {
+		usernameSet[app.HunterUsername] = struct{}{}
+	}
+	usernames := make([]string, 0, len(usernameSet))
+	for u := range usernameSet {
+		usernames = append(usernames, u)
+	}
+	avatarMap, _ := server.store.GetAvatarUrlsByUsernames(ctx, usernames)
+
 	pbBounty := convertBounty(bounty)
+	pbBounty.EmployerAvatarUrl = avatarMap[bounty.EmployerUsername]
 
 	// 转换关联的申请列表数据
 	var pbApplications []*pb.BountyApplication
 	for _, app := range bounty.Applications {
 		currentApp := app
-		pbApplications = append(pbApplications, convertBountyApplication(&currentApp))
+		pbApp := convertBountyApplication(&currentApp)
+		pbApp.HunterAvatarUrl = avatarMap[app.HunterUsername]
+		pbApplications = append(pbApplications, pbApp)
 	}
 
 	return &pb.GetBountyResponse{

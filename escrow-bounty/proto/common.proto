@@ -18,6 +18,7 @@ message Bounty {
     google.protobuf.Timestamp deadline = 10;
     string submission_text = 11;
     string hunter_username = 12; // 当前 ACCEPTED 的猎人用户名（无则空字符串）
+    string employer_avatar_url = 13;
 }
 
 message BountyApplication {
@@ -29,4 +30,5 @@ message BountyApplication {
     google.protobuf.Timestamp created_at = 5;
     google.protobuf.Timestamp updated_at = 6;
     Bounty bounty = 8;  // 关联悬赏信息（响应中附加）
+    string hunter_avatar_url = 9;
 }

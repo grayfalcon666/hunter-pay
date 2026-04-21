@@ -18,14 +18,33 @@
           :style="{ animationDelay: `${i * 80}ms` }"
         >
           <q-card-section>
-            <div class="comment-bounty">
-              <router-link :to="`/bounty/${comment.bounty_id}`" class="bounty-link">
-                悬赏 #{{ comment.bounty_id }}
+            <div class="comment-header">
+              <img
+                v-if="comment.authorAvatarUrl"
+                :src="imageUrl(comment.authorAvatarUrl)"
+                class="comment-avatar"
+                alt="avatar"
+              />
+              <div v-else class="comment-avatar-placeholder">
+                {{ (comment.authorUsername || '?')[0]?.toUpperCase() }}
+              </div>
+              <router-link :to="`/bounty/${comment.bountyId}`" class="bounty-link">
+                悬赏 #{{ comment.bountyId }}
               </router-link>
+              <span class="comment-author">{{ comment.authorUsername }}</span>
+            </div>
+            <div v-if="comment.replyToUsername" class="comment-quote">
+              <span>@{{ comment.replyToUsername }}: {{ comment.replyToContent }}</span>
             </div>
             <p class="comment-text">{{ comment.content }}</p>
+            <q-img
+              v-if="comment.imagePath"
+              :src="imageUrl(comment.imagePath)"
+              class="comment-image"
+              style="max-width: 200px; margin-bottom: 8px;"
+            />
             <div class="comment-meta">
-              <span>{{ formatDate(comment.created_at) }}</span>
+              <span>{{ formatDate(comment.createdAt) }}</span>
               <q-btn
                 flat dense size="sm" icon="delete" color="negative"
                 @click="handleDelete(comment.id)"
@@ -50,6 +69,7 @@ import { ref, onMounted } from 'vue'
 import { useQuasar } from 'quasar'
 import { useAuthStore } from 'src/stores/auth'
 import { listUserComments, deleteComment } from 'src/api/chat'
+import { imageUrl } from 'src/api/upload'
 
 const $q = useQuasar()
 const authStore = useAuthStore()
@@ -110,9 +130,14 @@ onMounted(loadComments)
   border-radius: var(--radius-card) !important;
 }
 
-.comment-bounty { margin-bottom: 8px; }
+.comment-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.comment-avatar { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+.comment-avatar-placeholder { width: 28px; height: 28px; border-radius: 50%; background: var(--color-bg-elevated); border: 1px solid var(--color-border); display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 600; color: var(--color-accent-gold); flex-shrink: 0; }
 .bounty-link { color: var(--color-accent-teal); text-decoration: none; font-size: 0.85rem; &:hover { text-decoration: underline; } }
+.comment-author { font-size: 0.85rem; color: var(--color-text-muted); }
+.comment-quote { margin: 0 0 6px; padding: 4px 10px; background: rgba(201, 168, 76, 0.15); border-left: 2px solid var(--color-accent-gold); border-radius: 4px; font-size: 0.8rem; color: var(--color-accent-gold); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .comment-text { font-size: 0.95rem; color: var(--color-text-primary); margin: 0 0 10px; line-height: 1.5; }
+.comment-image { border-radius: 8px; }
 .comment-meta { display: flex; justify-content: space-between; align-items: center; font-size: 0.78rem; color: var(--color-text-muted); font-family: var(--font-mono); }
 
 .empty-state {

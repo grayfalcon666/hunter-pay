@@ -37,4 +37,5 @@ message UserReview {
     string comment = 6;
     string review_type = 7;           // EMPLOYER_TO_HUNTER | HUNTER_TO_EMPLOYER
     google.protobuf.Timestamp created_at = 8;
+    string reviewer_avatar_url = 9;    // 评论者头像
 }

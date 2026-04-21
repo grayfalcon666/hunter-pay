@@ -1,6 +1,7 @@
 package router
 
 import (
+	"log"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -34,7 +35,7 @@ func NewRouter(maker middleware.JWTMaker, allowedOrigins string, backends []Back
 	// Health check
 	r.GET("/health", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
-			"status": "ok",
+			"status":  "ok",
 			"service": "api-gateway",
 		})
 	})
@@ -60,6 +61,7 @@ func configureBackends(rg *gin.RouterGroup, backends []Backend) {
 		if err != nil {
 			panic("invalid backend URL: " + b.TargetURL)
 		}
+		log.Printf("[router] Backend prefix=%s target=%s", b.Prefix, b.TargetURL)
 
 		// Register static routes only (avoids Gin wildcard + static conflicts)
 		// Build set of gwPaths that have method-specific routes so we skip Any for them
@@ -68,6 +70,7 @@ func configureBackends(rg *gin.RouterGroup, backends []Backend) {
 			parts := strings.SplitN(methodRoute, " ", 2)
 			if len(parts) == 2 {
 				methodGwPaths[parts[1]] = true
+				log.Printf("[router] MethodRoutes: method=%s gwPath=%s backendPath=%s", parts[0], parts[1], b.MethodRoutes[methodRoute])
 			}
 		}
 
@@ -75,6 +78,7 @@ func configureBackends(rg *gin.RouterGroup, backends []Backend) {
 			if methodGwPaths[gwPath] {
 				continue // skip: method-specific route handles this path
 			}
+			log.Printf("[router] Static: gwPath=%s -> backendPath=%s", gwPath, backendPath)
 
 			pathCopy := backendPath
 			proxy := httputil.NewSingleHostReverseProxy(target)
@@ -86,14 +90,16 @@ func configureBackends(rg *gin.RouterGroup, backends []Backend) {
 				path := pathCopy
 				if paramsStr := req.Header.Get("X-Gin-Params"); paramsStr != "" {
 					parts := strings.Split(paramsStr, ",")
+					log.Printf("[router] Director: backendPath=%s params=%s", pathCopy, paramsStr)
 					for _, part := range parts {
 						kv := strings.SplitN(part, "=", 2)
 						if len(kv) == 2 {
-							path = strings.ReplaceAll(path, ":"+kv[0], kv[1]) // Gin :param
+							path = strings.ReplaceAll(path, ":"+kv[0], kv[1])     // Gin :param
 							path = strings.ReplaceAll(path, "{"+kv[0]+"}", kv[1]) // backend {param}
 						}
 					}
 				}
+				log.Printf("[router] Director: final path=%s", path)
 				req.URL.Path = path
 				req.Header.Del("X-Gin-Params")
 				req.Header.Set("X-Forwarded-Host", req.Host)
@@ -101,7 +107,6 @@ func configureBackends(rg *gin.RouterGroup, backends []Backend) {
 				req.Header.Set("X-Forwarded-For", req.RemoteAddr)
 			}
 			rg.Any(gwPath, func(c *gin.Context) {
-				// Pass Gin path params to director via header
 				paramsStr := ""
 				for _, p := range c.Params {
 					if paramsStr != "" {
@@ -109,6 +114,7 @@ func configureBackends(rg *gin.RouterGroup, backends []Backend) {
 					}
 					paramsStr += p.Key + "=" + p.Value
 				}
+				log.Printf("[router] StaticRoute HIT: %s %s (params=%s)", c.Request.Method, gwPath, paramsStr)
 				c.Request.Header.Set("X-Gin-Params", paramsStr)
 				proxy.ServeHTTP(c.Writer, c.Request)
 			})
@@ -122,10 +128,26 @@ func configureBackends(rg *gin.RouterGroup, backends []Backend) {
 			}
 			method := parts[0]
 			gwPath := parts[1]
+			log.Printf("[router] MethodRoute: %s %s -> %s (target=%s)", method, gwPath, backendPath, b.TargetURL)
 			pathCopy := backendPath
+			var gwHost string
 			proxy := httputil.NewSingleHostReverseProxy(target)
-			proxy.ModifyResponse = func(resp *http.Response) error { return nil }
+			proxy.ModifyResponse = func(resp *http.Response) error {
+				// Fix 301/302 redirect Location: backend returns /upload/ → rewrite to full gateway URL
+				if resp.StatusCode == 301 || resp.StatusCode == 302 {
+					loc := resp.Header.Get("Location")
+					if loc != "" && !strings.HasPrefix(loc, "http://") && !strings.HasPrefix(loc, "https://") {
+						resp.Header.Set("Location", "http://"+gwHost+"/api/v1"+loc)
+					}
+				}
+				// Remove CORS headers from backend to avoid duplicate with gateway CORS middleware
+				resp.Header.Del("Access-Control-Allow-Origin")
+				resp.Header.Del("Access-Control-Allow-Methods")
+				resp.Header.Del("Access-Control-Allow-Headers")
+				return nil
+			}
 			proxy.Director = func(req *http.Request) {
+				gwHost = req.Host // capture gateway host for ModifyResponse
 				req.URL.Scheme = target.Scheme
 				req.URL.Host = target.Host
 				path := pathCopy
@@ -146,6 +168,7 @@ func configureBackends(rg *gin.RouterGroup, backends []Backend) {
 				req.Header.Set("X-Forwarded-For", req.RemoteAddr)
 			}
 			rg.Handle(method, gwPath, func(c *gin.Context) {
+				log.Printf("[router] MethodRoute HIT: %s %s (c.Request.URL.Path=%s)", method, gwPath, c.Request.URL.Path)
 				paramsStr := ""
 				for _, p := range c.Params {
 					if paramsStr != "" {
@@ -156,6 +179,7 @@ func configureBackends(rg *gin.RouterGroup, backends []Backend) {
 				c.Request.Header.Set("X-Gin-Params", paramsStr)
 				proxy.ServeHTTP(c.Writer, c.Request)
 			})
+			log.Printf("[router] Registered: %s %s", method, gwPath)
 		}
 	}
 }

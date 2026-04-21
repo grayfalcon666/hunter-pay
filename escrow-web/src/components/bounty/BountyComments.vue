@@ -5,24 +5,32 @@
     <!-- New comment form -->
     <div class="comment-form">
       <div v-if="replyingTo" class="replying-to">
-        <span>回复 @{{ replyingTo.author_username }}</span>
+        <span>回复 @{{ replyingTo.authorUsername }}</span>
         <q-btn flat dense size="sm" icon="close" @click="replyingTo = null" />
       </div>
       <q-input
         v-model="newCommentContent"
         type="textarea"
         outlined dense
-        :placeholder="replyingTo ? `回复 @${replyingTo.author_username}` : '写下你的评论...'"
+        :placeholder="replyingTo ? `回复 @${replyingTo.authorUsername}` : '写下你的评论...'"
         autogrow
         :maxlength="2000"
         counter
         class="comment-textarea"
       />
-      <div class="comment-form-actions">
+      <div class="comment-form-bottom">
+        <ImageUploader
+          v-model="commentImage"
+          entity-type="comment"
+          :entity-id="0"
+          :max-files="1"
+          v-model:uploading="isUploading"
+          @upload-success="onUploadSuccess"
+        />
         <q-btn
           unelevated color="primary" label="发表评论"
           :loading="submitting"
-          :disable="!newCommentContent.trim()"
+          :disable="(!newCommentContent.trim() || isUploading)"
           @click="handleSubmit"
         />
       </div>
@@ -37,6 +45,7 @@
         v-for="comment in topLevelComments"
         :key="comment.id"
         :comment="comment"
+        :all-comments="bountyStore.commentsFlat"
         @reply="setReplyingTo"
         @delete="handleDelete"
       />
@@ -52,6 +61,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useQuasar } from 'quasar'
 import { useBountyStore } from 'src/stores/bounty'
 import CommentItem from './CommentItem.vue'
+import ImageUploader from 'src/components/common/ImageUploader.vue'
 
 const props = defineProps({ bountyId: { type: Number, required: true } })
 
@@ -60,32 +70,59 @@ const bountyStore = useBountyStore()
 const newCommentContent = ref('')
 const replyingTo = ref(null)
 const submitting = ref(false)
+const commentImage = ref('')
+const uploadedCommentImage = ref(null)
+const isUploading = ref(false)
 
 const loading = computed(() => bountyStore.commentsLoading)
 const topLevelComments = computed(() =>
-  (bountyStore.comments || []).filter(c => !c.parent_id || c.parent_id === 0)
+  (bountyStore.comments || []).filter(c => c.parentId == null || c.parentId === '0' || c.parentId === 0)
 )
 const totalCount = computed(() => (bountyStore.comments || []).length)
 
 onMounted(() => {
+  console.log('[BountyComments] onMounted, bountyId:', props.bountyId)
   bountyStore.fetchComments(props.bountyId)
 })
 
+function computeReplyPayload(target) {
+  if (!target) return { parent_id: 0, reply_to_id: 0 }
+  const parent_id = target.parentId ?? target.id
+  const reply_to_id = target.id
+  return { parent_id, reply_to_id }
+}
+
 function setReplyingTo(comment) {
+  console.log('[BountyComments] setReplyingTo called, comment:', JSON.stringify(comment))
   replyingTo.value = comment
+  console.log('[BountyComments] replyingTo.value is now:', JSON.stringify(replyingTo.value))
   // Scroll to form
   document.querySelector('.comment-form')?.scrollIntoView({ behavior: 'smooth' })
+}
+
+function onUploadSuccess(img) {
+  console.log('[BountyComments] upload-success received, img:', JSON.stringify(img))
+  uploadedCommentImage.value = img
+  console.log('[BountyComments] uploadedCommentImage.value is now:', JSON.stringify(uploadedCommentImage.value))
 }
 
 async function handleSubmit() {
   submitting.value = true
   try {
-    await bountyStore.addComment(props.bountyId, {
-      parentId: replyingTo.value?.id,
+    const replyPayload = computeReplyPayload(replyingTo.value)
+    const payload = {
+      ...replyPayload,
       content: newCommentContent.value,
-    })
+      imageId: uploadedCommentImage.value?.id ?? 0,
+    }
+    console.log('[BountyComments] handleSubmit payload:', JSON.stringify(payload))
+    console.log('[BountyComments] replyingTo.value:', JSON.stringify(replyingTo.value))
+    console.log('[BountyComments] uploadedCommentImage.value:', JSON.stringify(uploadedCommentImage.value))
+    await bountyStore.addComment(props.bountyId, payload)
     newCommentContent.value = ''
     replyingTo.value = null
+    commentImage.value = ''
+    uploadedCommentImage.value = null
   } catch (e) {
     console.error('comment error:', e)
   } finally {
@@ -155,7 +192,17 @@ async function handleDelete(commentId) {
 .comment-form-actions {
   display: flex;
   justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
   margin-top: 10px;
+}
+
+.comment-form-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 10px;
+  gap: 12px;
 }
 
 .comments-list {

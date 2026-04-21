@@ -15,15 +15,22 @@
               <q-card-section class="profile-avatar-section">
                 <div class="avatar-wrapper">
                   <div class="avatar-circle">
-                    {{ (profileStore.profile.full_name || profileStore.profile.username)[0].toUpperCase() }}
+                    <img v-if="profileStore.profile.avatarUrl" :src="imageUrl(profileStore.profile.avatarUrl)" alt="avatar" />
+                    <span v-else>{{ (profileStore.profile.full_name || profileStore.profile.username)[0].toUpperCase() }}</span>
                   </div>
                 </div>
                 <h2 class="profile-name">{{ profileStore.profile.full_name || profileStore.profile.username }}</h2>
                 <span class="profile-username">@{{ profileStore.profile.username }}</span>
-                <p v-if="profileStore.profile.bio" class="profile-bio">{{ profileStore.profile.bio }}</p>
               </q-card-section>
 
-              <q-separator color="border" />
+              <q-separator v-if="profileStore.profile.bio" color="border" />
+
+              <q-card-section v-if="profileStore.profile.bio" class="profile-bio-section">
+                <div class="bio-label">个人简介</div>
+                <p class="bio-text">{{ profileStore.profile.bio }}</p>
+              </q-card-section>
+
+              <q-separator v-if="profileStore.profile.bio" color="border" />
 
               <q-card-section>
                 <div class="stat-grid">
@@ -91,7 +98,8 @@
               <div v-else-if="profileStore.reviews.length" class="reviews-list">
                 <div v-for="review in profileStore.reviews.slice(0, 5)" :key="review.id" class="review-item">
                   <div class="review-header">
-                    <div class="reviewer-avatar">{{ (review.reviewerUsername || '?')[0].toUpperCase() }}</div>
+                    <img v-if="review.reviewerAvatarUrl" :src="imageUrl(review.reviewerAvatarUrl)" class="reviewer-avatar" alt="avatar" />
+                    <div v-else class="reviewer-avatar">{{ (review.reviewerUsername || '?')[0].toUpperCase() }}</div>
                     <div>
                       <router-link :to="`/profile/${review.reviewerUsername}`" class="reviewer-name">
                         {{ review.reviewerUsername }}
@@ -122,6 +130,7 @@ import { useRoute } from 'vue-router'
 import { useProfileStore } from 'src/stores/profile'
 import { useAuthStore } from 'src/stores/auth'
 import { useChatStore } from 'src/stores/chat'
+import { imageUrl } from 'src/api/upload'
 
 const route = useRoute()
 const profileStore = useProfileStore()
@@ -207,11 +216,20 @@ onMounted(async () => {
   font-weight: 700;
   color: var(--color-accent-gold);
   box-shadow: 0 0 24px var(--color-glow-gold);
+  overflow: hidden;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
 }
 
 .profile-name { font-family: var(--font-display); font-size: 1.4rem; font-weight: 700; margin-bottom: 4px; }
 .profile-username { font-size: 0.85rem; color: var(--color-text-muted); font-family: var(--font-mono); }
-.profile-bio { font-size: 0.9rem; color: var(--color-text-muted); margin-top: 12px; line-height: 1.5; }
+.profile-bio-section { padding-top: 12px; padding-bottom: 12px; }
+.bio-label { font-size: 0.68rem; color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.08em; font-family: var(--font-mono); margin-bottom: 6px; }
+.bio-text { font-size: 0.9rem; color: var(--color-text-primary); line-height: 1.6; margin: 0; }
 
 .stat-grid {
   display: grid;
@@ -303,6 +321,7 @@ onMounted(async () => {
   display: flex; align-items: center; justify-content: center;
   font-family: var(--font-display); font-size: 0.75rem; font-weight: 600;
   color: var(--color-accent-gold);
+  object-fit: cover;
 }
 
 .reviewer-name { font-size: 0.875rem; font-weight: 600; color: var(--color-text-primary); text-decoration: none; }

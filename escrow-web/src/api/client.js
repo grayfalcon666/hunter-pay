@@ -13,6 +13,7 @@ apiClient.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
     }
+    console.log('[apiClient] request:', config.method?.toUpperCase(), config.baseURL + config.url, 'params:', JSON.stringify(config.params), 'data:', JSON.stringify(config.data))
     return config
   },
   (error) => Promise.reject(error)
@@ -20,8 +21,12 @@ apiClient.interceptors.request.use(
 
 // 响应拦截器：处理 401，统一错误格式
 apiClient.interceptors.response.use(
-  (response) => response.data,
+  (response) => {
+    console.log('[apiClient] response:', response.config.url, response.status, JSON.stringify(response.data))
+    return response.data
+  },
   (error) => {
+    console.log('[apiClient] error response:', error.response?.config?.url, error.response?.status, JSON.stringify(error.response?.data))
     if (error.response?.status === 401) {
       localStorage.removeItem('token')
       localStorage.removeItem('username')
